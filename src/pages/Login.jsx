@@ -95,7 +95,7 @@ export default function Login() {
           <button
             type="button"
             className="signin-btn"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
           >
             <span>Sign In</span>
             <IoArrowForward className="arrow" />

@@ -112,7 +112,7 @@ export default function Register() {
           <button
             type="button"
             className="signin-btn"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
           >
             <span>Create Account</span>
             <IoArrowForward className="arrow" />
@@ -122,7 +122,7 @@ export default function Register() {
           <div className="signup">
             <p>
               Already have an account?
-              <Link to="/login"> Sign In</Link>
+              <Link to="/"> Sign In</Link>
             </p>
           </div>
         </form>
