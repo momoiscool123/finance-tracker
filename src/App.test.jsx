@@ -3,9 +3,9 @@ import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
 test('renders the dashboard heading', () => {
-  // App now uses <Routes>, so it needs a router context to render.
+  // "/" is the login page now, so start the router at /dashboard.
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={['/dashboard']}>
       <App />
     </MemoryRouter>
   );

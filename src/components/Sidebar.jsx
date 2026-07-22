@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Icon, icons } from "./Icon";
 
 // NavLink adds the "is-active" class automatically based on the current URL,
@@ -6,6 +6,8 @@ import { Icon, icons } from "./Icon";
 const navClass = ({ isActive }) => `ft-nav__item ${isActive ? "is-active" : ""}`;
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+
   return (
     <aside className="ft-sidebar">
       <div className="ft-brand">
@@ -19,7 +21,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="ft-nav" aria-label="Main">
-        <NavLink to="/" end className={navClass}>
+        <NavLink to="/dashboard" end className={navClass}>
           <Icon path={icons.grid} size={15} />
           Dashboard
         </NavLink>
@@ -37,7 +39,11 @@ export default function Sidebar() {
             <span className="ft-user__mail">testing@gmail.com</span>
           </span>
         </div>
-        <button className="ft-signout" type="button">
+        <button
+          className="ft-signout"
+          type="button"
+          onClick={() => navigate("/")}
+        >
           <Icon path={icons.signout} size={13} />
           Sign out
         </button>
