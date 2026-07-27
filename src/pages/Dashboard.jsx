@@ -294,6 +294,8 @@ export default function Dashboard() {
           </li>
         </ul>
       </Panel>
+
+      <BankPanel />
     </>
   );
 }
