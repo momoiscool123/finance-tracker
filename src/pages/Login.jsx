@@ -1,15 +1,12 @@
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEnvelope, FaLock } from "react-icons/fa";
-import { IoEyeOutline, IoEyeOffOutline, IoArrowForward } from "react-icons/io5";
 
-import "../styles/auth.css";
+import "../styles/login.css";
 
-// Fintrack brand mark — same icon used in the dashboard sidebar.
+// Fintrack brand mark — same icon used across the app.
 function BrandMark() {
   return (
-    <span className="auth-mark" aria-hidden="true">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <span className="ls-badge" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
         <polyline points="16 7 22 7 22 13" />
       </svg>
@@ -18,91 +15,104 @@ function BrandMark() {
 }
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
   const navigate = useNavigate();
 
   return (
-    <div className="login-page">
-      <div className="auth-glow auth-glow--1"></div>
-      <div className="auth-glow auth-glow--2"></div>
-
-      <div className="login-card">
-        {/* Brand */}
-        <div className="logo-section">
-          <BrandMark />
-          <h1 className="brand">Fintrack</h1>
+    <div className="login-screen">
+      {/* Floating preview "buckets" — sample data, a peek at what's inside.
+          Each rises up from the bottom on load (.bucket__rise), then floats
+          gently (.bucket__inner). Decorative only, so hidden from assistive tech. */}
+      <div className="bucket bucket--tokyo" aria-hidden="true">
+        <div className="bucket__rise">
+          <div className="bucket__inner">
+            <p className="bucket__label">Tokyo trip</p>
+            <p className="bucket__value">
+              EGP 2,040 <span className="bucket__sub">/ 3,000</span>
+            </p>
+            <span className="bucket__bar">
+              <span className="bucket__fill bucket__fill--coral" style={{ width: "68%" }} />
+            </span>
+          </div>
         </div>
+      </div>
 
-        {/* Heading */}
-        <div className="heading">
-          <h2>Welcome back</h2>
-          <p>Sign in to your account to continue</p>
+      <div className="bucket bucket--emergency" aria-hidden="true">
+        <div className="bucket__rise">
+          <div className="bucket__inner">
+            <p className="bucket__label">Emergency fund</p>
+            <p className="bucket__value">EGP 2,140</p>
+            <span className="bucket__bar">
+              <span className="bucket__fill bucket__fill--teal" style={{ width: "90%" }} />
+            </span>
+          </div>
         </div>
+      </div>
 
-        {/* Form */}
-        <form onSubmit={(e) => e.preventDefault()}>
-          <div className="input-group">
-            <label>Email address</label>
-            <div className="input-box">
-              <FaEnvelope className="icon" />
-              <input type="email" placeholder="name@email.com" />
-            </div>
-          </div>
-
-          <div className="input-group">
-            <label>Password</label>
-            <div className="input-box">
-              <FaLock className="icon" />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••••••"
-              />
-              {showPassword ? (
-                <IoEyeOffOutline
-                  className="eye"
-                  onClick={() => setShowPassword(false)}
-                />
-              ) : (
-                <IoEyeOutline
-                  className="eye"
-                  onClick={() => setShowPassword(true)}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Options */}
-          <div className="options">
-            <label className="remember">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={() => setRemember(!remember)}
-              />
-              <span className="custom-check">{remember && "✓"}</span>
-              <span>Remember me</span>
-            </label>
-            <a href="#">Forgot password?</a>
-          </div>
-
-          {/* Button — points to the dashboard for now (no auth wired up yet) */}
-          <button
-            type="button"
-            className="signin-btn"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>Sign In</span>
-            <IoArrowForward className="arrow" />
-          </button>
-
-          {/* Register link */}
-          <div className="signup">
-            <p>
-              Don't have an account? <Link to="/register">Sign Up</Link>
+      <div className="bucket bucket--dinner" aria-hidden="true">
+        <div className="bucket__rise">
+          <div className="bucket__inner">
+            <p className="bucket__label">Dinner with Ana — split</p>
+            <p className="bucket__value">
+              You&rsquo;re owed <span className="bucket__num-teal">EGP 23.50</span>
             </p>
           </div>
+        </div>
+      </div>
+
+      <div className="bucket bucket--budget" aria-hidden="true">
+        <div className="bucket__rise">
+          <div className="bucket__inner">
+            <p className="bucket__label">This month&rsquo;s budget</p>
+            <p className="bucket__value">
+              <span className="bucket__num-coral">EGP 318</span> left to spend
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Hero */}
+      <div className="ls-hero">
+        <div className="ls-brand">
+          <BrandMark />
+          <span className="ls-wordmark">Fintrack</span>
+        </div>
+        <h1 className="ls-title">Welcome back</h1>
+        <p className="ls-subtitle">Log in and get back to your goals.</p>
+      </div>
+
+      {/* Login card */}
+      <div className="ls-card">
+        <form onSubmit={(e) => e.preventDefault()}>
+          <input
+            className="ls-field"
+            type="email"
+            placeholder="Email"
+            aria-label="Email"
+          />
+          <input
+            className="ls-field"
+            type="password"
+            placeholder="Password"
+            aria-label="Password"
+          />
+          {/* Points to the dashboard for now (no auth wired up yet) */}
+          <button
+            type="button"
+            className="ls-btn"
+            onClick={() => navigate("/dashboard")}
+          >
+            Jump back in
+          </button>
         </form>
+
+        <div className="ls-foot">
+          <a href="#" className="ls-link ls-link--muted">
+            Forgot password?
+          </a>
+          <Link to="/register" className="ls-link ls-link--coral">
+            Create account
+          </Link>
+        </div>
       </div>
     </div>
   );

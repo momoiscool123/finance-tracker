@@ -15,10 +15,12 @@ export const Icon = ({ path, size = 14 }) => (
 );
 
 export const icons = {
-  dollar: (
+  banknote: (
     <>
-      <line x1="12" y1="1" x2="12" y2="23" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <circle cx="12" cy="12" r="2.5" />
+      <path d="M6 12h.01" />
+      <path d="M18 12h.01" />
     </>
   ),
   receipt: (

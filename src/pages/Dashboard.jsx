@@ -51,7 +51,7 @@ export default function Dashboard() {
           label="Total spent"
           value={money(SUMMARY.totalSpent)}
           meta={SUMMARY.period}
-          icon={icons.dollar}
+          icon={icons.banknote}
           accent="#2ebd85"
         />
         <StatCard

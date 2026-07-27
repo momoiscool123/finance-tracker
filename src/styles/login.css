@@ -1,0 +1,226 @@
+/* ==========================================================================
+   Login page — warm, light, modern redesign.
+   Scoped under `.login-screen` (its own theme, separate from the dark
+   `.login-page` register styles and the `.ft` dashboard styles).
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+.login-screen {
+  --cream: #f6efe4;
+  --cream-hi: #fbf6ee;
+  --ink: #201e1b;
+  --muted: #9a9086;
+  --coral: #e8745c;
+  --coral-dark: #d9603f;
+  --teal: #1aa39b;
+  --card: #ffffff;
+  --field: #eadfce;
+  --field-focus: #f0e7d9;
+  --track: #e6dccb;
+
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 48px 24px;
+  background: radial-gradient(circle at 50% -10%, var(--cream-hi), var(--cream) 60%);
+  color: var(--ink);
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.login-screen,
+.login-screen *,
+.login-screen *::before,
+.login-screen *::after { box-sizing: border-box; }
+.login-screen * { margin: 0; padding: 0; }
+.login-screen :focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+
+/* ---- hero ---- */
+.ls-hero {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.ls-brand { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.ls-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--cream);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 22px rgba(40, 30, 20, .18);
+}
+.ls-wordmark {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--muted);
+}
+.ls-title {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.ls-subtitle { font-size: 15px; font-weight: 500; color: var(--muted); }
+
+/* ---- login card ---- */
+.ls-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 30px 60px rgba(60, 45, 25, .10), 0 8px 20px rgba(60, 45, 25, .05);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.login-screen form { display: flex; flex-direction: column; gap: 14px; }
+.ls-field {
+  width: 100%;
+  height: 58px;
+  border: none;
+  border-radius: 14px;
+  background: var(--field);
+  padding: 0 20px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: background .15s ease, box-shadow .15s ease;
+}
+.ls-field::placeholder { color: #a89e91; }
+.ls-field:focus {
+  outline: none;
+  background: var(--field-focus);
+  box-shadow: 0 0 0 3px rgba(232, 116, 92, .18);
+}
+
+/* primary button — lifts up "out of the page" on hover */
+.ls-btn {
+  width: 100%;
+  height: 58px;
+  margin-top: 2px;
+  border: none;
+  border-radius: 14px;
+  background: var(--coral);
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(232, 116, 92, .28);
+  transition: transform .18s cubic-bezier(.2, .8, .2, 1), box-shadow .18s ease, background .18s ease;
+}
+.ls-btn:hover {
+  background: var(--coral-dark);
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: 0 22px 40px rgba(232, 116, 92, .40), 0 10px 18px rgba(60, 45, 25, .10);
+}
+.ls-btn:active {
+  transform: translateY(-1px) scale(1);
+  box-shadow: 0 6px 14px rgba(232, 116, 92, .30);
+}
+
+/* ---- footer links ---- */
+.ls-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ls-link {
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color .15s ease;
+}
+.ls-link--muted { color: var(--muted); }
+.ls-link--muted:hover { color: var(--ink); }
+.ls-link--coral { color: var(--coral); font-weight: 700; }
+.ls-link--coral:hover { color: var(--coral-dark); }
+
+/* ---- floating preview "buckets" ---- */
+.bucket { position: absolute; z-index: 1; }
+/* entrance layer: rises up from below the screen on load, then holds in place */
+.bucket__rise { animation: bucketRise .95s cubic-bezier(.34, 1.4, .5, 1) both; }
+.bucket__inner {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 15px 18px;
+  min-width: 210px;
+  box-shadow: 0 22px 44px rgba(60, 45, 25, .12), 0 6px 14px rgba(60, 45, 25, .06);
+  animation: bucketFloat 5s ease-in-out infinite;
+}
+.bucket__label { font-size: 12.5px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+.bucket__value { font-size: 20px; font-weight: 700; color: var(--ink); }
+.bucket__sub { font-size: 13px; font-weight: 500; color: var(--muted); }
+.bucket__num-coral { color: var(--coral); }
+.bucket__num-teal { color: var(--teal); }
+.bucket__bar {
+  display: block;
+  margin-top: 11px;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--track);
+  overflow: hidden;
+}
+.bucket__fill { display: block; height: 100%; border-radius: 99px; }
+.bucket__fill--coral { background: var(--coral); }
+.bucket__fill--teal { background: var(--teal); }
+
+/* positions + gentle tilts (rotation on wrapper, float on inner so they don't fight) */
+.bucket--tokyo     { top: 15%;    left: 6%; transform: rotate(-5deg); }
+.bucket--emergency { top: 29%;   right: 5%; transform: rotate(4deg); }
+.bucket--dinner    { bottom: 13%; left: 9%; transform: rotate(-3deg); }
+.bucket--budget    { bottom: 15%; right: 7%; transform: rotate(4deg); }
+
+/* entrance stagger — buckets pop up one after another */
+.bucket--tokyo .bucket__rise     { animation-delay: .10s; }
+.bucket--emergency .bucket__rise { animation-delay: .22s; }
+.bucket--dinner .bucket__rise    { animation-delay: .34s; }
+.bucket--budget .bucket__rise    { animation-delay: .46s; }
+
+/* float begins once each bucket has finished rising into place */
+.bucket--tokyo .bucket__inner     { animation-duration: 4.4s; animation-delay: 1.05s; }
+.bucket--emergency .bucket__inner { animation-duration: 5.2s; animation-delay: 1.17s; }
+.bucket--dinner .bucket__inner    { animation-duration: 4.8s; animation-delay: 1.29s; }
+.bucket--budget .bucket__inner    { animation-duration: 5.6s; animation-delay: 1.41s; }
+
+@keyframes bucketRise {
+  0%   { transform: translateY(110vh); opacity: 0; }
+  100% { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes bucketFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+/* ---- responsive ---- */
+@media (max-width: 1000px) {
+  .bucket { display: none; }        /* hide floaters so they never cover the form */
+  .ls-title { font-size: 34px; }
+}
+@media (max-width: 480px) {
+  .ls-card { padding: 24px 20px; }
+  .ls-title { font-size: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-screen *, .bucket__inner { animation: none !important; transition: none !important; }
+}

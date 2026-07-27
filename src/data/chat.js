@@ -19,15 +19,15 @@ export const SUGGESTIONS = [
 const CANNED = [
   {
     match: /most|where|top|category/i,
-    text: "Food & Dining leads at $289 — that's 23% of your transactions, mostly weekday lunches under $20.",
+    text: "Food & Dining leads at EGP 289 — that's 23% of your transactions, mostly weekday lunches under EGP 20.",
   },
   {
     match: /compare|june|month|jun|jul/i,
-    text: "July is down $296 against June ($1,106 vs $1,402). Shopping dropped the most, from $412 to $178.",
+    text: "July is down EGP 296 against June (EGP 1,106 vs EGP 1,402). Shopping dropped the most, from EGP 412 to EGP 178.",
   },
   {
     match: /biggest|largest|highest|expensive/i,
-    text: "Your largest purchase in July was $168 at Northgate Home on the 21st, filed under Shopping.",
+    text: "Your largest purchase in July was EGP 168 at Northgate Home on the 21st, filed under Shopping.",
   },
 ];
 
