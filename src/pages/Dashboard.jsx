@@ -17,6 +17,7 @@ import StatCard from "../components/StatCard";
 import Panel from "../components/Panel";
 import ChartTooltip from "../components/ChartTooltip";
 import RangeCandle from "../components/RangeCandle";
+import BankPanel from "../components/BankPanel";
 import { icons } from "../components/Icon";
 import {
   CATEGORY_COLORS,
