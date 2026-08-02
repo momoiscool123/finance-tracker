@@ -1,0 +1,8 @@
+# Backend Python dependencies.
+# A teammate sets up the backend with:
+#   cd backend
+#   python3 -m venv .venv
+#   source .venv/bin/activate
+#   pip install -r requirements.txt
+fastapi==0.140.7
+uvicorn==0.51.0
