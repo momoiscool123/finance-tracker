@@ -1,0 +1,147 @@
+:root{
+
+    --bg:#F8F4EF;
+
+    --sidebar:#FFFFFF;
+
+    --card:#FFFFFF;
+
+    --panel:#FFFFFF;
+
+    --panel-2:#FAFAFA;
+
+    --text:#222222;
+
+    --text-light:#666666;
+
+    --text-dim:#888888;
+
+    --text-mute:#999999;
+
+    --border:#ECECEC;
+
+    --line:#ECECEC;
+
+    --line-soft:#F5F5F5;
+
+    --input-bg:#FAFAFA;
+
+    --button-bg:#FFF4EF;
+
+    --accent:#EF7158;
+
+}
+
+body.dark{
+
+    --bg:#1E1E2E;
+
+    --sidebar:#282A3E;
+
+    --card:#34374E;
+
+    --panel:#34374E;
+
+    --panel-2:#40445D;
+
+    --line:#50556E;
+
+    --line-soft:#474C63;
+
+    --text:#F8FAFC;
+
+    --text-light:#CBD5E1;
+
+    --text-dim:#94A3B8;
+
+    --text-mute:#64748B;
+
+    --border:#3D4160;
+
+    --input-bg:#2A2D45;
+
+    --button-bg:#3A2E28;
+
+}
+
+/* ===== Better text contrast in Dark Mode ===== */
+
+/* Only affect dark panels */
+body.dark .ft-panel h1,
+body.dark .ft-panel h2,
+body.dark .ft-panel h3,
+body.dark .ft-panel h4,
+body.dark .ft-panel h5,
+body.dark .ft-panel h6{
+    color:var(--text);
+}
+
+body.dark .ft-stat__label,
+body.dark .ft-stat__meta,
+body.dark .ft-panel__subtitle,
+body.dark .ft-user__mail,
+body.dark .ft-header__sub,
+body.dark .ft-greeting,
+body.dark .ft-table thead th{
+    color: var(--text-light) !important;
+}
+
+body.dark input::placeholder,
+body.dark textarea::placeholder{
+    color:#9FA8BC;
+}
+
+body.dark .settings-label,
+body.dark .input-label,
+body.dark .auth-label{
+    color:white !important;
+}
+
+body.dark .ft-table__merchant,
+body.dark .ft-table__amount,
+body.dark .ft-table tbody td{
+    color:white !important;
+}
+
+body.dark .bank-card,
+body.dark .bank-card h3,
+body.dark .bank-card h4,
+body.dark .bank-card p,
+body.dark .bank-card span{
+    color:white !important;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    transition:.3s;
+}
+body.dark .danger-box{
+    background:#402A2A;
+    border-left-color:#FF5E5E;
+}
+
+/* ===== Dark mode shadow depth =====
+   Light-mode shadow opacities (.08–.12) read as almost nothing against
+   a dark background, so surfaces looked "flat" in dark mode. Deepen
+   them here instead of touching every individual rule. */
+body.dark .ft-sidebar,
+body.dark .ft-panel,
+body.dark .ft-stat,
+body.dark .ft-icon-btn,
+body.dark .ft-notification,
+body.dark .ft-sidebar-toggle{
+    box-shadow: 0 14px 36px rgba(0,0,0,.45);
+}
+
+body.dark .ft-toast{
+    box-shadow: 0 20px 50px rgba(0,0,0,.55);
+}
+
+body.dark .ft-user__card{
+    box-shadow: 0 8px 20px rgba(0,0,0,.3);
+}
+
+body.dark .transaction-modal{
+    box-shadow: 0 30px 70px rgba(0,0,0,.6);
+}

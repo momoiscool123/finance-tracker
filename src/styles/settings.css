@@ -1,0 +1,665 @@
+/* ==========================================
+   SETTINGS PAGE
+========================================== */
+
+.settings-grid{
+
+    display:grid;
+
+    gap:36px;
+
+    margin-top:25px;
+
+}
+
+.settings-form{
+
+    display:grid;
+
+    gap:28px;
+
+}
+
+.profile-section{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:22px;
+
+    margin-bottom:40px;
+
+}
+
+.profile-avatar{
+
+    width:90px;
+
+    height:90px;
+
+    border-radius:50%;
+
+    background:var(--accent);
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:30px;
+
+    font-weight:700;
+
+    box-shadow:
+        0 12px 25px rgba(239,113,88,.25);
+
+}
+
+.upload-btn{
+
+    padding:12px 22px;
+
+
+    border-radius:14px;
+
+    background:var(--button-bg);
+
+    color:var(--accent);
+
+    border:1px solid var(--border);
+
+    font-size:1rem;
+
+    font-weight:600;
+
+    letter-spacing:.01em;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.upload-btn:hover{
+
+    background:var(--accent);
+
+    color:white;
+
+}
+
+.settings-field{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+.settings-field label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    font-size:.95rem;
+
+    font-weight:600;
+
+    line-height:1.4;
+
+    letter-spacing:.01em;
+
+    color:#222222;
+
+}
+
+.settings-input{
+
+    width:100%;
+
+    height:60px;
+
+    padding:0 20px;
+
+    border-radius:16px;
+
+    background:var(--input-bg);
+
+    color:var(--text);
+
+    border:1px solid var(--border);
+
+    font-size:1rem;
+
+    font-weight:500;
+
+    line-height:1.5;
+
+    transition:.25s;
+
+}
+
+.settings-input:focus{
+
+    outline:none;
+
+    border-color:var(--accent);
+
+    background:white;
+
+}
+
+.settings-btn{
+
+    margin-top:15px;
+
+    width:220px;
+
+    height:56px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:var(--accent);
+
+    color:white;
+
+    font-size:1rem;
+
+    font-weight:600;
+
+    letter-spacing:.01em;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.settings-btn:hover{
+
+    background:color-mix(in srgb, var(--accent) 85%, black);
+
+    transform:translateY(-2px);
+
+}
+
+.setting-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:28px 0;
+
+    border-bottom:1px solid #F1F1F1;
+
+}
+
+.setting-row:last-child{
+
+    border:none;
+
+}
+
+.setting-row h4{
+
+    font-size:17px;
+
+    color:var(--text);
+
+}
+
+.setting-row p{
+
+    margin-top:6px;
+
+    color:var(--text-light);
+
+    font-size:14px;
+
+}
+
+.theme-btn{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:12px 22px;
+
+    border:none;
+
+    border-radius:16px;
+
+    background:#FFF4EF;
+
+    color:var(--accent);
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.25s;
+
+}
+
+.theme-btn:hover{
+
+    background:var(--accent);
+
+    color:white;
+
+}
+
+.accent-circle{
+
+    width:30px;
+
+    height:30px;
+
+    border-radius:50%;
+
+    background:var(--accent);
+
+    box-shadow:
+        0 8px 18px rgba(239,113,88,.30);
+
+}
+
+.checkbox-row{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:16px 0;
+
+    font-size:16px;
+
+    cursor:pointer;
+
+}
+
+.checkbox-row input{
+
+    width:20px;
+
+    height:20px;
+
+    accent-color:var(--accent);
+
+}
+
+.danger-box{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
+    padding:24px;
+
+    border-radius:20px;
+
+    background:#FFF2F2;
+
+    border-left:5px solid #E5484D;
+
+}
+
+.danger-box h3{
+
+    color:#D83B3B;
+
+    margin-bottom:8px;
+
+}
+
+.danger-box p{
+
+    color:var(--text-light);
+
+}
+
+.delete-btn{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    border:none;
+
+    padding:14px 22px;
+
+    border-radius:16px;
+
+    background:#E5484D;
+
+    color:white;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.25s;
+
+}
+
+.delete-btn:hover{
+
+    background:#CF2F34;
+
+}
+
+.logout-btn{
+
+    margin-top:25px;
+
+    width:100%;
+
+    height:58px;
+
+
+    border-radius:18px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+    
+    color:var(--text);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:10px;
+
+    font-size:1rem;
+
+    font-weight:600;
+
+    letter-spacing:.01em;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.logout-btn:hover{
+
+    background:var(--accent);
+
+    color:white;
+
+}
+
+@media (max-width:768px){
+
+    .profile-section{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .danger-box{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .setting-row{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:18px;
+
+    }
+
+    .settings-btn{
+
+        width:100%;
+
+    }
+
+}
+.settings-input::placeholder {
+    color:var(--text-light);
+    opacity: 1;
+    font-size:.98rem;
+    font-weight:400;
+}
+body[data-theme="light"]{
+    --bg:var(--bg);
+    --card:#FFFFFF;
+    --text:#222222;
+}
+
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    transition:.3s;
+}
+
+.ft-panel{
+    background:var(--card);
+    color:var(--text);
+     padding:36px;
+}
+
+.ft-header{
+    color:var(--text);
+}
+
+.setting-row h4,
+.ft-header__title{
+    color:var(--text);
+}
+
+.settings-field label{
+    color:inherit;
+}
+.accent-picker{
+    display:flex;
+    gap:12px;
+}
+
+.accent{
+    width:34px;
+    height:34px;
+
+    border-radius:50%;
+
+    border:3px solid white;
+
+    cursor:pointer;
+
+    display:block;
+
+    padding:0;
+
+    outline:none;
+
+    transition:.25s;
+
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+
+.accent:hover{
+    transform:scale(1.15);
+}
+
+.coral{ background:#EF7158; }
+.blue{ background:#3B82F6; }
+.green{ background:#22C55E; }
+.purple{ background:#8B5CF6; }
+
+.accent.is-active{
+    outline:2px solid var(--accent);
+    outline-offset:3px;
+}
+
+.ft-header__sub{
+    color:var(--text-light);
+}
+.ft-greeting,
+.profile-section h3,
+.profile-section p{
+    color:var(--text);
+}
+
+body.dark .ft-panel h1,
+body.dark .ft-panel h2,
+body.dark .ft-panel h3,
+body.dark .ft-panel h4,
+body.dark .ft-panel label,
+body.dark .ft-panel p{
+    color:var(--text);
+}
+
+/* ===========================
+   DARK MODE INPUTS
+=========================== */
+
+body.dark .settings-input,
+body.dark input,
+body.dark select,
+body.dark textarea{
+
+    background:#3B3F56;
+
+    color:#FFFFFF;
+
+    border:1px solid #50556E;
+
+    transition:.3s;
+
+}
+
+body.dark .settings-input::placeholder,
+body.dark input::placeholder,
+body.dark textarea::placeholder{
+
+    color:#AEB5C5;
+
+}
+
+body.dark .settings-input:focus,
+body.dark input:focus,
+body.dark select:focus,
+body.dark textarea:focus{
+
+    border-color:var(--accent);
+
+    box-shadow:0 0 0 4px rgba(239,113,88,.18);
+
+}
+body.dark select{
+
+    appearance:none;
+
+    background:#3B3F56;
+
+    color:white;
+
+}
+body.dark button:not(.theme-btn):not(.accent){
+
+    background:#444964;
+
+    color:white;
+
+    border:1px solid #50556E;
+
+}
+
+body.dark button:not(.theme-btn):not(.accent):hover{
+
+    background:#50556E;
+
+}
+body.dark .save-btn,
+body.dark .ft-signout,
+body.dark .auth-button{
+
+    background:var(--accent);
+
+    color:white;
+
+    border:none;
+
+}
+body.dark .settings-card,
+body.dark .profile-card,
+body.dark .appearance-card,
+body.dark .notification-card,
+body.dark .danger-card{
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+}
+body.dark .ft-panel,
+body.dark .ft-stat,
+body.dark .settings-card{
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.35);
+
+}
+/* ===========================
+   WHITE LABELS IN DARK MODE
+=========================== */
+
+body.dark .settings-field label,
+body.dark .settings-field label svg,
+body.dark .settings-field .icon,
+body.dark .settings-field .fa,
+body.dark .settings-field .fas,
+body.dark .settings-field .far,
+body.dark .settings-field .fab {
+
+    color: #FFFFFF !important;
+
+}
+body.dark .settings-field label,
+body.dark .settings-field label svg{
+    color:#FFFFFF !important;
+}
+
+body:not(.dark) .settings-field label,
+body:not(.dark) .settings-field label svg{
+    color:#222222;
+}
