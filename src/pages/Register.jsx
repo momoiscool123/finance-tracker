@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
 import { IoEyeOutline, IoEyeOffOutline, IoArrowForward } from "react-icons/io5";
+import { registerUser } from "../api";
 
 import "../styles/auth.css";
 
@@ -26,11 +27,45 @@ function BrandMark() {
   );
 }
 
+const errorStyle = {
+  color: "#e5484d",
+  fontSize: "13px",
+  textAlign: "center",
+  margin: 0,
+};
+
 // Registration page — reuses the same scoped `.login-page` styles as Login.
 export default function Register() {
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    setError("");
+
+    if (password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await registerUser({ email, name, password });
+      // Account created — send them to the login page to sign in.
+      navigate("/");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="login-page">
@@ -55,12 +90,17 @@ export default function Register() {
         </div>
 
         {/* Form */}
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form onSubmit={handleRegister}>
           <div className="input-group">
             <label>Full name</label>
             <div className="input-box">
               <FaUser className="icon" />
-              <input type="text" placeholder="Jane Doe" />
+              <input
+                type="text"
+                placeholder="Jane Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
           </div>
 
@@ -68,7 +108,12 @@ export default function Register() {
             <label>Email address</label>
             <div className="input-box">
               <FaEnvelope className="icon" />
-              <input type="email" placeholder="name@email.com" />
+              <input
+                type="email"
+                placeholder="name@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
           </div>
 
@@ -79,6 +124,8 @@ export default function Register() {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               {showPassword ? (
                 <IoEyeOffOutline
@@ -101,6 +148,8 @@ export default function Register() {
               <input
                 type={showConfirm ? "text" : "password"}
                 placeholder="••••••••••••"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
               />
               {showConfirm ? (
                 <IoEyeOffOutline
@@ -116,13 +165,10 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Button — points to the dashboard for now (no auth wired up yet) */}
-          <button
-            type="button"
-            className="signin-btn"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>Create Account</span>
+          {error && <p style={errorStyle}>{error}</p>}
+
+          <button type="submit" className="signin-btn" disabled={loading}>
+            <span>{loading ? "Creating…" : "Create Account"}</span>
             <IoArrowForward className="arrow" />
           </button>
 

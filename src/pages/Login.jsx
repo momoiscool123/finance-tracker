@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../api";
 
 import "../styles/login.css";
 
@@ -14,8 +16,35 @@ function BrandMark() {
   );
 }
 
+const errorStyle = {
+  color: "#e5484d",
+  fontSize: "13px",
+  textAlign: "center",
+  margin: 0,
+};
+
 export default function Login() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const data = await loginUser({ email, password });
+      // Save the JWT so future requests can prove who we are.
+      localStorage.setItem("token", data.access_token);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="login-screen">
@@ -82,26 +111,28 @@ export default function Login() {
 
       {/* Login card */}
       <div className="ls-card">
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form onSubmit={handleLogin}>
           <input
             className="ls-field"
             type="email"
             placeholder="Email"
             aria-label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <input
             className="ls-field"
             type="password"
             placeholder="Password"
             aria-label="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
-          {/* Points to the dashboard for now (no auth wired up yet) */}
-          <button
-            type="button"
-            className="ls-btn"
-            onClick={() => navigate("/dashboard")}
-          >
-            Jump back in
+
+          {error && <p style={errorStyle}>{error}</p>}
+
+          <button type="submit" className="ls-btn" disabled={loading}>
+            {loading ? "Signing in…" : "Jump back in"}
           </button>
         </form>
 
