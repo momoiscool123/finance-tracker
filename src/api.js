@@ -2,11 +2,17 @@
 // In production you'd move this URL into an env var (import.meta.env.VITE_API_URL).
 const API_BASE = "http://localhost:8000";
 
-async function postJSON(path, body) {
+// Attach the stored JWT so protected endpoints know who's calling.
+function authHeaders() {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function request(path, { method = "GET", body } = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    method,
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   // FastAPI returns errors as { detail: "..." }
@@ -17,12 +23,29 @@ async function postJSON(path, body) {
   return data;
 }
 
+// --- auth ---
 // POST /auth/register -> { user_id }
 export function registerUser({ email, name, password }) {
-  return postJSON("/auth/register", { email, name, password });
+  return request("/auth/register", { method: "POST", body: { email, name, password } });
 }
 
 // POST /auth/login -> { access_token, token_type }
 export function loginUser({ email, password }) {
-  return postJSON("/auth/login", { email, password });
+  return request("/auth/login", { method: "POST", body: { email, password } });
+}
+
+// --- transactions (protected — need the token) ---
+// POST /transactions -> the created transaction (with items)
+export function createTransaction(payload) {
+  return request("/transactions", { method: "POST", body: payload });
+}
+
+// GET /transactions -> the logged-in user's transactions
+export function listTransactions() {
+  return request("/transactions");
+}
+
+// DELETE /transactions/{id} -> 204 No Content
+export function deleteTransaction(id) {
+  return request(`/transactions/${id}`, { method: "DELETE" });
 }

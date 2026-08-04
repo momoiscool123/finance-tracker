@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api";
+import { useTransactions } from "../context/TransactionContext";
 
 import "../styles/login.css";
 
@@ -25,6 +26,7 @@ const errorStyle = {
 
 export default function Login() {
   const navigate = useNavigate();
+  const { loadTransactions } = useTransactions();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -38,6 +40,7 @@ export default function Login() {
       const data = await loginUser({ email, password });
       // Save the JWT so future requests can prove who we are.
       localStorage.setItem("token", data.access_token);
+      await loadTransactions(); // pull this user's transactions right after login
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);

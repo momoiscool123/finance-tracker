@@ -34,6 +34,7 @@ export default function TransactionModal({ closeModal, onSaved }) {
   const { addTransaction } = useTransactions();
   const [formData, setFormData] = useState(emptyForm);
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
   const firstFieldRef = useRef(null);
 
   useEffect(() => {
@@ -59,20 +60,27 @@ export default function TransactionModal({ closeModal, onSaved }) {
     return Object.keys(next).length === 0;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!validate()) return;
 
-    const saved = addTransaction({
-      merchant: formData.merchant.trim(),
-      category: formData.category,
-      amount: Number(formData.amount),
-      date: formData.date,
-      note: formData.note.trim(),
-    });
-
-    onSaved?.(saved);
-    closeModal();
+    setSaving(true);
+    setErrors((prev) => ({ ...prev, submit: undefined }));
+    try {
+      const saved = await addTransaction({
+        merchant: formData.merchant.trim(),
+        category: formData.category,
+        amount: Number(formData.amount),
+        date: formData.date,
+        note: formData.note.trim(),
+      });
+      onSaved?.(saved);
+      closeModal();
+    } catch (err) {
+      // e.g. token expired, or the backend is down
+      setErrors((prev) => ({ ...prev, submit: err.message }));
+      setSaving(false);
+    }
   }
 
   return (
@@ -184,12 +192,18 @@ export default function TransactionModal({ closeModal, onSaved }) {
             </div>
           )}
 
+          {errors.submit && (
+            <p style={{ color: "#e5484d", fontSize: "13px", margin: "4px 0 0" }}>
+              {errors.submit}
+            </p>
+          )}
+
           <div className="modal-buttons">
-            <button type="button" className="cancel-btn" onClick={closeModal}>
+            <button type="button" className="cancel-btn" onClick={closeModal} disabled={saving}>
               Cancel
             </button>
-            <button type="submit" className="save-btn">
-              Save transaction
+            <button type="submit" className="save-btn" disabled={saving}>
+              {saving ? "Saving…" : "Save transaction"}
             </button>
           </div>
         </form>
