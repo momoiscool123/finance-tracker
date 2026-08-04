@@ -11,6 +11,8 @@ import jwt
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 
+from routers.food import router as food_router
+
 # Load backend/.env so SECRET_KEY is available via os.getenv()
 load_dotenv()
 
@@ -30,6 +32,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Food recommendation feature — additive, does not touch the auth routes above.
+app.include_router(food_router)
 
 
 class RegisterRequest(BaseModel):

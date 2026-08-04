@@ -1235,3 +1235,127 @@ margin:auto;
         box-shadow .35s;
 
 }
+/* ---- food recommendation flow ---- */
+.fc-geo-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 7px 12px;
+  border: 1px dashed var(--accent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  font-size: 11px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s ease, opacity .15s ease;
+}
+.fc-geo-btn:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.fc-geo-btn:disabled { opacity: .5; cursor: default; }
+
+.fc-food-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fc-food-card {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: fc-pop .16s ease-out;
+}
+
+.fc-food-card__badge {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.fc-food-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.fc-food-card__meta {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.fc-food-card__address {
+  font-size: 10.5px;
+  color: var(--text-mute);
+  margin: 0;
+}
+
+.fc-food-card__facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  margin: 4px 0 0;
+}
+.fc-food-card__facts > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.fc-food-card__facts dt {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: var(--text-mute);
+}
+.fc-food-card__facts dd {
+  font-size: 11px;
+  color: var(--text);
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+.fc-tag {
+  display: inline-block;
+  width: fit-content;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+.fc-tag--ok { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.fc-tag--warn { background: #e5484d20; color: #f28b8e; }
+.fc-tag--conf-high { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.fc-tag--conf-medium { background: #e0a52620; color: #e0a526; }
+.fc-tag--conf-low { background: #e5484d20; color: #f28b8e; }
+
+.fc-food-card__reason {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin: 2px 0 0;
+}
+
+.fc-food-card__maps {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 6px 11px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #06120c;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity .15s ease;
+}
+.fc-food-card__maps:hover { opacity: .88; }
