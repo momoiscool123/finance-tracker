@@ -35,9 +35,18 @@ export default function Login() {
   async function handleLogin(e) {
     e.preventDefault();
     setError("");
+
+    // Don't submit blank fields — this is what let an empty email/password
+    // slip through to the backend and log in as a stray blank account.
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const data = await loginUser({ email, password });
+      const data = await loginUser({ email: cleanEmail, password });
       // Save the JWT so future requests can prove who we are.
       localStorage.setItem("token", data.access_token);
       await loadTransactions(); // pull this user's transactions right after login
@@ -120,6 +129,7 @@ export default function Login() {
             type="email"
             placeholder="Email"
             aria-label="Email"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -128,6 +138,7 @@ export default function Login() {
             type="password"
             placeholder="Password"
             aria-label="Password"
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

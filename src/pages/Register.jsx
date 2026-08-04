@@ -50,6 +50,18 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
+    // Guard against blank/weak accounts — a blank one is what caused the
+    // "log in with empty fields" bug.
+    const cleanName = name.trim();
+    const cleanEmail = email.trim();
+    if (!cleanName || !cleanEmail) {
+      setError("Please fill in your name and email.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
     if (password !== confirm) {
       setError("Passwords don't match.");
       return;
@@ -57,7 +69,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await registerUser({ email, name, password });
+      await registerUser({ email: cleanEmail, name: cleanName, password });
       // Account created — send them to the login page to sign in.
       navigate("/");
     } catch (err) {
@@ -98,6 +110,7 @@ export default function Register() {
               <input
                 type="text"
                 placeholder="Jane Doe"
+                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -111,6 +124,7 @@ export default function Register() {
               <input
                 type="email"
                 placeholder="name@email.com"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -124,6 +138,8 @@ export default function Register() {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••••••"
+                required
+                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -148,6 +164,8 @@ export default function Register() {
               <input
                 type={showConfirm ? "text" : "password"}
                 placeholder="••••••••••••"
+                required
+                minLength={8}
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
               />

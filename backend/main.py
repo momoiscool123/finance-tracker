@@ -103,14 +103,27 @@ def get_current_user(
 
 @app.post("/auth/register")
 def register_user(request: RegisterRequest, session=Depends(get_session)):
-    existing_user = session.query(User).filter(User.email == request.email).first()
+    # Normalise + validate first, so we never create blank/garbage accounts.
+    # (A blank account is what let empty email + empty password log in.)
+    email = request.email.strip().lower()
+    name = request.name.strip()
+    password = request.password
+
+    if not email or "@" not in email or "." not in email:
+        raise HTTPException(status_code=400, detail="A valid email is required")
+    if not name:
+        raise HTTPException(status_code=400, detail="Name is required")
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    existing_user = session.query(User).filter(User.email == email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    hashed = bcrypt.hashpw(request.password.encode("utf-8"), bcrypt.gensalt())
+    hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     password_hash = hashed.decode("utf-8")
 
-    user = User(email=request.email, name=request.name, password_hash=password_hash)
+    user = User(email=email, name=name, password_hash=password_hash)
 
     session.add(user)
     session.commit()
@@ -121,10 +134,18 @@ def register_user(request: RegisterRequest, session=Depends(get_session)):
 
 @app.post("/auth/login")
 def login_user(request: LoginRequest, session=Depends(get_session)):
-    user = session.query(User).filter(User.email == request.email).first()
+    email = request.email.strip().lower()
+    password = request.password
+
+    # Reject blank credentials before touching the database, so an empty
+    # email can never match an account (defence in depth).
+    if not email or not password:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    user = session.query(User).filter(User.email == email).first()
 
     if not user or not bcrypt.checkpw(
-        request.password.encode("utf-8"), user.password_hash.encode("utf-8")
+        password.encode("utf-8"), user.password_hash.encode("utf-8")
     ):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
