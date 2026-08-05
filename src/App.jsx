@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import "./styles/dashboard.css";
 import Settings from "./pages/Settings";
 import RecurringExpenses from "./pages/RecurringExpenses";
+import DownloadPage from "./pages/Download";
 import { TransactionProvider } from "./context/TransactionContext";
 import { applyStoredAccent, applyStoredTheme } from "./utils/theme";
 
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/bank-sharing" element={<BankSharing />} />
           <Route path="/recurring-expenses" element={<RecurringExpenses />} />
+          <Route path="/download" element={<DownloadPage />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Routes>

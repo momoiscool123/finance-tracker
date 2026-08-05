@@ -6,7 +6,7 @@ import { registerUser } from "../api";
 
 import "../styles/auth.css";
 
-// Fintrack brand mark — same icon used in the dashboard sidebar.
+// Tracklet brand mark — same icon used in the dashboard sidebar.
 function BrandMark() {
   return (
     <span className="auth-mark" aria-hidden="true">
@@ -92,7 +92,7 @@ export default function Register() {
         {/* Brand */}
         <div className="logo-section">
           <BrandMark />
-          <h1 className="brand">Fintrack</h1>
+          <h1 className="brand">Tracklet</h1>
         </div>
 
         {/* Heading */}

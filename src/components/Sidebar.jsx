@@ -5,6 +5,7 @@ import {
   LogOut,
   Wallet,
   Repeat2,
+  Download,
 } from "lucide-react";
 import { FaCog, FaUniversity } from "react-icons/fa";
 import { useCurrentUser, signOut } from "../auth";
@@ -34,7 +35,7 @@ export default function Sidebar() {
         </div>
 
         <div>
-          <h2 className="ft-brand__title">Fintrack</h2>
+          <h2 className="ft-brand__title">Tracklet</h2>
           <p className="ft-brand__subtitle">Personal Finance</p>
         </div>
       </div>
@@ -59,6 +60,11 @@ export default function Sidebar() {
         <NavLink to="/recurring-expenses" className={navClass}>
           <Repeat2 size={19} />
           <span>Recurring & quick</span>
+        </NavLink>
+
+        <NavLink to="/download" className={navClass}>
+          <Download size={19} />
+          <span>Download</span>
         </NavLink>
 
         <NavLink to="/settings" className={navClass}>

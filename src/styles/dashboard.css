@@ -1267,3 +1267,55 @@ margin:auto;
 .recharts-surface:focus-visible {
     outline: none;
 }
+
+/* ---- "Get the app" page (with the runaway No button) ---- */
+.dl-page {
+    display: grid;
+    place-items: center;
+    min-height: 55vh;
+    padding: 20px 0;
+}
+.dl-card {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 42px 34px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .06);
+    overflow: hidden;           /* keep the dodging No button inside the card */
+}
+.dl-badge {
+    width: 66px; height: 66px;
+    margin: 0 auto 20px;
+    display: grid; place-items: center;
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+}
+.dl-title { font-size: 22px; font-weight: 800; margin: 0 0 8px; color: var(--text); }
+.dl-sub {
+    font-size: 14px; line-height: 1.5;
+    color: var(--text); opacity: .65;
+    margin: 0 auto 28px; max-width: 340px;
+}
+.dl-actions { display: flex; gap: 14px; justify-content: center; align-items: center; }
+.dl-btn {
+    border: none; border-radius: 12px;
+    padding: 12px 22px;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    cursor: pointer;
+}
+.dl-btn--yes {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--accent) 32%, transparent);
+    transition: filter .15s ease;
+}
+.dl-btn--yes:hover { filter: brightness(1.06); }
+.dl-btn--no {
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border);
+    transition: transform .12s ease;   /* glide when it dodges */
+}

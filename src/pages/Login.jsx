@@ -6,7 +6,7 @@ import { loadUser } from "../auth";
 
 import "../styles/login.css";
 
-// Fintrack brand mark — same icon used across the app.
+// Tracklet brand mark — same icon used across the app.
 function BrandMark() {
   return (
     <span className="ls-badge" aria-hidden="true">
@@ -117,7 +117,7 @@ export default function Login() {
       <div className="ls-hero">
         <div className="ls-brand">
           <BrandMark />
-          <span className="ls-wordmark">Fintrack</span>
+          <span className="ls-wordmark">Tracklet</span>
         </div>
         <h1 className="ls-title">Welcome back</h1>
         <p className="ls-subtitle">Log in and get back to your goals.</p>

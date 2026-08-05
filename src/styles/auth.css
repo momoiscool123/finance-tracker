@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Auth pages (Login / Register) — Fintrack theme.
+   Auth pages (Login / Register) — Tracklet theme.
    Matches the dashboard's design system (same tokens as the `.ft` shell in
    dashboard.css). Every rule is scoped under `.login-page` so nothing leaks
    into or collides with the dashboard styles.
@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 .login-page {
-  /* Fintrack design tokens (mirror of the dashboard `.ft` tokens).
+  /* Tracklet design tokens (mirror of the dashboard `.ft` tokens).
      --bg/--text/--accent are intentionally not redeclared here — they
      inherit straight from the real values set on <body>/<html>, so a
      changed accent or theme is picked up automatically. */
