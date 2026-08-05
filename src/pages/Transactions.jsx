@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FaPlus, FaTrashAlt } from "react-icons/fa";
+import { FaPlus, FaTrashAlt, FaPen } from "react-icons/fa";
 
 import Panel from "../components/Panel";
 import TransactionModal from "../components/TransactionModal/TransactionModal";
@@ -9,6 +9,7 @@ import { useTransactions } from "../context/TransactionContext";
 export default function Transactions() {
   const { transactions, deleteTransaction } = useTransactions();
   const [openModal, setOpenModal] = useState(false);
+  const [editing, setEditing] = useState(null); // transaction being edited, or null for "add"
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
 
@@ -19,8 +20,23 @@ export default function Transactions() {
     [transactions]
   );
 
-  function handleSaved(transaction) {
-    setToast(`Added ${transaction.merchant} · ${money(transaction.amount)}`);
+  function openAdd() {
+    setEditing(null);
+    setOpenModal(true);
+  }
+  function openEdit(transaction) {
+    setEditing(transaction);
+    setOpenModal(true);
+  }
+  function closeModal() {
+    setOpenModal(false);
+    setEditing(null);
+  }
+
+  function handleSaved(transaction, wasEditing) {
+    setToast(
+      `${wasEditing ? "Updated" : "Added"} ${transaction.merchant} · ${money(transaction.amount)}`
+    );
     window.clearTimeout(toastTimer.current);
     toastTimer.current = window.setTimeout(() => setToast(null), 3200);
   }
@@ -37,7 +53,7 @@ export default function Transactions() {
         <button
           type="button"
           className="ft-add-btn"
-          onClick={() => setOpenModal(true)}
+          onClick={openAdd}
         >
           <FaPlus />
           Add transaction
@@ -61,7 +77,7 @@ export default function Transactions() {
             <button
               type="button"
               className="ft-add-btn"
-              onClick={() => setOpenModal(true)}
+              onClick={openAdd}
             >
               <FaPlus />
               Add transaction
@@ -99,15 +115,26 @@ export default function Transactions() {
                   </td>
                   <td className="ft-table__amount">{money(t.amount)}</td>
                   <td style={{ textAlign: "right" }}>
-                    <button
-                      type="button"
-                      className="ft-row-delete"
-                      onClick={() => deleteTransaction(t.id)}
-                      aria-label={`Delete ${t.merchant} transaction`}
-                      title="Delete transaction"
-                    >
-                      <FaTrashAlt />
-                    </button>
+                    <div className="ft-row-actions">
+                      <button
+                        type="button"
+                        className="ft-row-edit"
+                        onClick={() => openEdit(t)}
+                        aria-label={`Edit ${t.merchant} transaction`}
+                        title="Edit transaction"
+                      >
+                        <FaPen />
+                      </button>
+                      <button
+                        type="button"
+                        className="ft-row-delete"
+                        onClick={() => deleteTransaction(t.id)}
+                        aria-label={`Delete ${t.merchant} transaction`}
+                        title="Delete transaction"
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -118,7 +145,8 @@ export default function Transactions() {
 
       {openModal && (
         <TransactionModal
-          closeModal={() => setOpenModal(false)}
+          transaction={editing}
+          closeModal={closeModal}
           onSaved={handleSaved}
         />
       )}

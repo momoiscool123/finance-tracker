@@ -58,6 +58,16 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+
+class UpdateProfileRequest(BaseModel):
+    name: str
+    email: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
     
 
 # ---------------------------------------------------------------------------
@@ -282,6 +292,71 @@ def get_me(current_user: User = Depends(get_current_user)):
         "email": current_user.email,
     }
 
+
+@app.put("/auth/me")
+def update_profile(
+    request: UpdateProfileRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    # Update the signed-in user's name and email. Validated the same way as
+    # registration so we never store a blank name or malformed email.
+    name = request.name.strip()
+    email = request.email.strip().lower()
+
+    if not name:
+        raise HTTPException(status_code=400, detail="Name is required")
+    if not email or "@" not in email or "." not in email:
+        raise HTTPException(status_code=400, detail="A valid email is required")
+
+    # Make sure the new email isn't already taken by a *different* user.
+    clash = (
+        session.query(User)
+        .filter(User.email == email, User.user_id != current_user.user_id)
+        .first()
+    )
+    if clash:
+        raise HTTPException(status_code=400, detail="That email is already in use")
+
+    current_user.name = name
+    current_user.email = email
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+
+    return {
+        "user_id": current_user.user_id,
+        "name": current_user.name,
+        "email": current_user.email,
+    }
+
+
+@app.put("/auth/password")
+def change_password(
+    request: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    # Require the current password before changing it, so a leaked/borrowed
+    # session can't silently reset the password.
+    if not bcrypt.checkpw(
+        request.current_password.encode("utf-8"),
+        current_user.password_hash.encode("utf-8"),
+    ):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    if len(request.new_password) < 8:
+        raise HTTPException(
+            status_code=400, detail="New password must be at least 8 characters"
+        )
+
+    hashed = bcrypt.hashpw(request.new_password.encode("utf-8"), bcrypt.gensalt())
+    current_user.password_hash = hashed.decode("utf-8")
+    session.add(current_user)
+    session.commit()
+
+    return {"status": "Password updated"}
+
 # ---------------------------------------------------------------------------
 # Transaction routes
 # ---------------------------------------------------------------------------
@@ -334,6 +409,34 @@ def get_transaction(
     transaction = session.get(Transaction, transaction_id)
     if not transaction or transaction.user_id != current_user.user_id:
         raise HTTPException(status_code=404, detail="Transaction not found")
+
+    return transaction
+
+
+@app.put("/transactions/{transaction_id}", response_model=TransactionOut)
+def update_transaction(
+    transaction_id: int,
+    request: TransactionCreate,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    transaction = session.get(Transaction, transaction_id)
+    if not transaction or transaction.user_id != current_user.user_id:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    # Overwrite the editable fields with the new values.
+    transaction.description = request.description
+    transaction.category = request.category
+    if request.date:
+        transaction.date = request.date
+    # Replace the line items; the delete-orphan cascade drops the old ones, and
+    # the total price is recomputed from the new items (same rule as create).
+    transaction.items = [Item(item_name=i.item_name, item_price=i.item_price) for i in request.items]
+    transaction.price = sum(i.item_price for i in request.items)
+
+    session.add(transaction)
+    session.commit()
+    session.refresh(transaction)
 
     return transaction
 

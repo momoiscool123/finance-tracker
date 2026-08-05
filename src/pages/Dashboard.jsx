@@ -16,6 +16,7 @@ import {
 
 import StatCard from "../components/StatCard";
 import Panel from "../components/Panel";
+import SpendingTrend from "../components/SpendingTrend";
 import ChartTooltip from "../components/ChartTooltip";
 import RangeCandle from "../components/RangeCandle";
 import { icons } from "../components/Icon";
@@ -144,6 +145,8 @@ export default function Dashboard() {
           accent="#f06a8a"
         />
       </div>
+
+      <SpendingTrend series={timelineAll} money={money} />
 
       <div className="ft-row">
         <Panel

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
   createTransaction,
   listTransactions,
+  updateTransaction as apiUpdateTransaction,
   deleteTransaction as apiDeleteTransaction,
 } from "../api";
 
@@ -74,6 +75,18 @@ export function TransactionProvider({ children }) {
     return row;
   }
 
+  // Update on the backend, then swap the matching row in state. Because every
+  // chart and stat derives from this `transactions` array, replacing the row
+  // here makes the edit show up everywhere automatically.
+  async function updateTransaction(id, form) {
+    const updated = await apiUpdateTransaction(id, toBackend(form));
+    const row = fromBackend(updated);
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === id ? row : t)).sort(byDateDesc)
+    );
+    return row;
+  }
+
   // Delete on the backend, then drop the row from state.
   async function deleteTransaction(id) {
     await apiDeleteTransaction(id);
@@ -81,7 +94,14 @@ export function TransactionProvider({ children }) {
   }
 
   const value = useMemo(
-    () => ({ transactions, loading, addTransaction, deleteTransaction, loadTransactions }),
+    () => ({
+      transactions,
+      loading,
+      addTransaction,
+      updateTransaction,
+      deleteTransaction,
+      loadTransactions,
+    }),
     [transactions, loading]
   );
 

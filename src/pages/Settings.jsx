@@ -1,11 +1,10 @@
 import Panel from "../components/Panel";
 import "../styles/settings.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   FaUser,
   FaEnvelope,
-  FaPhone,
   FaLock,
   FaBell,
   FaPalette,
@@ -21,6 +20,8 @@ import {
   setAccent as saveAccent,
   setTheme as saveTheme,
 } from "../utils/theme";
+import { updateProfile, changePassword } from "../api";
+import { getStoredUser, setStoredUser, useCurrentUser } from "../auth";
 
 export default function Settings() {
 const [theme, setThemeState] = useState(getStoredTheme);
@@ -37,11 +38,73 @@ const changeAccent = (hex) => {
     setAccentState(hex);
 };
 
-const [profile, setProfile] = useState({
-  name: "",
-  email: "",
-  phone: "",
+const user = useCurrentUser();
+
+// Profile form — seeded from the cached user, then kept in sync once the
+// user is (re)loaded from the backend.
+const [profile, setProfile] = useState(() => {
+  const u = getStoredUser();
+  return { name: u?.name || "", email: u?.email || "" };
 });
+const [profileMsg, setProfileMsg] = useState(null); // { ok, text }
+const [savingProfile, setSavingProfile] = useState(false);
+
+useEffect(() => {
+  if (user) setProfile({ name: user.name || "", email: user.email || "" });
+}, [user]);
+
+// Password form.
+const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
+const [pwMsg, setPwMsg] = useState(null);
+const [changingPw, setChangingPw] = useState(false);
+
+async function handleSaveProfile() {
+  setProfileMsg(null);
+  if (!profile.name.trim() || !profile.email.trim()) {
+    setProfileMsg({ ok: false, text: "Name and email are required." });
+    return;
+  }
+  setSavingProfile(true);
+  try {
+    const updated = await updateProfile({
+      name: profile.name.trim(),
+      email: profile.email.trim(),
+    });
+    setStoredUser(updated); // so the sidebar/avatar pick up the new name/email
+    setProfile({ name: updated.name, email: updated.email });
+    setProfileMsg({ ok: true, text: "Profile updated." });
+  } catch (err) {
+    setProfileMsg({ ok: false, text: err.message });
+  } finally {
+    setSavingProfile(false);
+  }
+}
+
+async function handleChangePassword() {
+  setPwMsg(null);
+  if (!pw.current || !pw.next) {
+    setPwMsg({ ok: false, text: "Enter your current and new password." });
+    return;
+  }
+  if (pw.next.length < 8) {
+    setPwMsg({ ok: false, text: "New password must be at least 8 characters." });
+    return;
+  }
+  if (pw.next !== pw.confirm) {
+    setPwMsg({ ok: false, text: "New passwords don't match." });
+    return;
+  }
+  setChangingPw(true);
+  try {
+    await changePassword({ current_password: pw.current, new_password: pw.next });
+    setPw({ current: "", next: "", confirm: "" });
+    setPwMsg({ ok: true, text: "Password updated." });
+  } catch (err) {
+    setPwMsg({ ok: false, text: err.message });
+  } finally {
+    setChangingPw(false);
+  }
+}
 
   return (
     <>
@@ -129,29 +192,26 @@ const [profile, setProfile] = useState({
 />
             </div>
 
-            <div className="settings-field">
-              <label>
-                <FaPhone />
-                Phone Number
-              </label>
-
-              <input
-  className="settings-input"
-  type="tel"
-  placeholder="Enter your phone number"
-  value={profile.phone}
-  onChange={(e) =>
-    setProfile({
-      ...profile,
-      phone: e.target.value,
-    })
-  }
-/>
-            </div>
-
-            <button className="settings-btn">
-              Save Changes
+            <button
+              className="settings-btn"
+              type="button"
+              onClick={handleSaveProfile}
+              disabled={savingProfile}
+            >
+              {savingProfile ? "Saving…" : "Save Changes"}
             </button>
+
+            {profileMsg && (
+              <p
+                style={{
+                  margin: "8px 0 0",
+                  fontSize: 13,
+                  color: profileMsg.ok ? "#2ebd85" : "#e5484d",
+                }}
+              >
+                {profileMsg.text}
+              </p>
+            )}
 
           </div>
 
@@ -175,6 +235,8 @@ const [profile, setProfile] = useState({
               <input
                 className="settings-input"
                 type="password"
+                value={pw.current}
+                onChange={(e) => setPw({ ...pw, current: e.target.value })}
               />
             </div>
 
@@ -187,6 +249,8 @@ const [profile, setProfile] = useState({
               <input
                 className="settings-input"
                 type="password"
+                value={pw.next}
+                onChange={(e) => setPw({ ...pw, next: e.target.value })}
               />
             </div>
 
@@ -199,12 +263,31 @@ const [profile, setProfile] = useState({
               <input
                 className="settings-input"
                 type="password"
+                value={pw.confirm}
+                onChange={(e) => setPw({ ...pw, confirm: e.target.value })}
               />
             </div>
 
-            <button className="settings-btn">
-              Change Password
+            <button
+              className="settings-btn"
+              type="button"
+              onClick={handleChangePassword}
+              disabled={changingPw}
+            >
+              {changingPw ? "Updating…" : "Change Password"}
             </button>
+
+            {pwMsg && (
+              <p
+                style={{
+                  margin: "8px 0 0",
+                  fontSize: 13,
+                  color: pwMsg.ok ? "#2ebd85" : "#e5484d",
+                }}
+              >
+                {pwMsg.text}
+              </p>
+            )}
 
           </div>
 

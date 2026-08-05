@@ -927,6 +927,29 @@ margin:auto;
   background: color-mix(in srgb, #e5484d 14%, transparent);
   color: #e5484d;
 }
+/* ---- transaction row edit ---- */
+.ft-row-actions {
+  display: inline-flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.ft-row-edit {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-mute);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+.ft-row-edit:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
 .ft-table__note {
   display: block;
   font-size: 12px;
@@ -1234,4 +1257,13 @@ margin:auto;
         border-color .35s,
         box-shadow .35s;
 
+}
+
+/* The spending-trend chart is interactive; hide the focus outline shown after
+   clicking/dragging on it (the marker + pill already indicate the active point). */
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-surface:focus,
+.recharts-surface:focus-visible {
+    outline: none;
 }

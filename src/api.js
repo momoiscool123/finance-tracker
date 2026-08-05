@@ -39,6 +39,19 @@ export function getCurrentUser() {
   return request("/auth/me");
 }
 
+// PUT /auth/me -> the updated { user_id, name, email }
+export function updateProfile({ name, email }) {
+  return request("/auth/me", { method: "PUT", body: { name, email } });
+}
+
+// PUT /auth/password -> { status }
+export function changePassword({ current_password, new_password }) {
+  return request("/auth/password", {
+    method: "PUT",
+    body: { current_password, new_password },
+  });
+}
+
 // --- transactions (protected — need the token) ---
 // POST /transactions -> the created transaction (with items)
 export function createTransaction(payload) {
@@ -48,6 +61,11 @@ export function createTransaction(payload) {
 // GET /transactions -> the logged-in user's transactions
 export function listTransactions() {
   return request("/transactions");
+}
+
+// PUT /transactions/{id} -> the updated transaction
+export function updateTransaction(id, payload) {
+  return request(`/transactions/${id}`, { method: "PUT", body: payload });
 }
 
 // DELETE /transactions/{id} -> 204 No Content

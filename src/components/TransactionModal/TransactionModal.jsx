@@ -31,15 +31,28 @@ const emptyForm = {
   note: "",
 };
 
-export default function TransactionModal({ closeModal, onSaved }) {
-  const { addTransaction } = useTransactions();
-  const [formData, setFormData] = useState(emptyForm);
+export default function TransactionModal({ closeModal, onSaved, transaction }) {
+  const { addTransaction, updateTransaction } = useTransactions();
+  const isEditing = Boolean(transaction);
+  const [formData, setFormData] = useState(
+    transaction
+      ? {
+          merchant: transaction.merchant || "",
+          category: transaction.category || "",
+          amount: String(transaction.amount ?? ""),
+          date: transaction.date || todayISO(),
+          note: transaction.note || "",
+        }
+      : emptyForm
+  );
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [suggesting, setSuggesting] = useState(false); // waiting on /categorize
   const [suggested, setSuggested] = useState(false);   // category was auto-filled
   const firstFieldRef = useRef(null);
-  const manualCategoryRef = useRef(false); // true once the user picks a category by hand
+  // Editing starts with a real category already chosen, so treat it as
+  // user-set — the live suggester shouldn't overwrite it.
+  const manualCategoryRef = useRef(isEditing);
 
   useEffect(() => {
     firstFieldRef.current?.focus();
@@ -113,14 +126,17 @@ export default function TransactionModal({ closeModal, onSaved }) {
     setSaving(true);
     setErrors((prev) => ({ ...prev, submit: undefined }));
     try {
-      const saved = await addTransaction({
+      const payload = {
         merchant: formData.merchant.trim(),
         category: formData.category,
         amount: Number(formData.amount),
         date: formData.date,
         note: formData.note.trim(),
-      });
-      onSaved?.(saved);
+      };
+      const saved = isEditing
+        ? await updateTransaction(transaction.id, payload)
+        : await addTransaction(payload);
+      onSaved?.(saved, isEditing);
       closeModal();
     } catch (err) {
       // e.g. token expired, or the backend is down
@@ -139,8 +155,14 @@ export default function TransactionModal({ closeModal, onSaved }) {
       >
         <div className="modal-header">
           <div>
-            <h2 id="add-transaction-title">Add transaction</h2>
-            <p className="modal-header__sub">Log a purchase so your totals stay current</p>
+            <h2 id="add-transaction-title">
+              {isEditing ? "Edit transaction" : "Add transaction"}
+            </h2>
+            <p className="modal-header__sub">
+              {isEditing
+                ? "Changes update your totals and charts everywhere"
+                : "Log a purchase so your totals stay current"}
+            </p>
           </div>
           <button type="button" className="close-btn" onClick={closeModal} aria-label="Close">
             ✕
@@ -261,7 +283,7 @@ export default function TransactionModal({ closeModal, onSaved }) {
               Cancel
             </button>
             <button type="submit" className="save-btn" disabled={saving}>
-              {saving ? "Saving…" : "Save transaction"}
+              {saving ? "Saving…" : isEditing ? "Save changes" : "Save transaction"}
             </button>
           </div>
         </form>

@@ -12,6 +12,12 @@ export function getStoredUser() {
   }
 }
 
+// Overwrite the cached user (e.g. after editing the profile) so the rest of
+// the app (sidebar, avatar) shows the new values on next read.
+export function setStoredUser(user) {
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
 // Fetch the current user from the backend and cache it. Call this right after login.
 export async function loadUser() {
   const user = await getCurrentUser(); // GET /auth/me (uses the stored token)
