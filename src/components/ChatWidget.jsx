@@ -162,7 +162,7 @@ export default function ChatWidget() {
   return (
     <div className="fc">
       {open && (
-        <section className="fc-panel" role="dialog" aria-label="Assistant">
+        <section className="fc-panel" role="dialog" aria-label="Mwafaraty">
           <header className="fc-head">
             <span className="fc-head__mark" aria-hidden="true">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -171,7 +171,7 @@ export default function ChatWidget() {
               </svg>
             </span>
             <span className="fc-head__text">
-              <span className="fc-head__name">Assistant</span>
+              <span className="fc-head__name">Mwafaraty</span>
               <span className="fc-head__status">
                 <i className="fc-dot" aria-hidden="true" />
                 {transactions.length
@@ -236,7 +236,7 @@ export default function ChatWidget() {
             ))}
 
             {typing && (
-              <div className="fc-msg fc-msg--bot fc-msg--typing" aria-label="Assistant is typing">
+              <div className="fc-msg fc-msg--bot fc-msg--typing" aria-label="Mwafaraty is typing">
                 <i /><i /><i />
               </div>
             )}
