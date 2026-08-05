@@ -65,6 +65,14 @@ export const RANGE_DATA = [
 export const money = (n) =>
   "EGP " + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// Total spent in the current calendar month (used by the budget/limit logic).
+export const spentThisMonth = (transactions) => {
+  const ym = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  return transactions
+    .filter((t) => (t.date || "").slice(0, 7) === ym)
+    .reduce((sum, t) => sum + t.amount, 0);
+};
+
 // Formats an ISO date ("2026-07-29") the same way across the table and modal.
 export const formatDate = (iso) => {
   if (!iso) return "—";

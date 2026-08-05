@@ -6,8 +6,9 @@ import {
   Wallet,
   Repeat2,
   Download,
+  Landmark,
 } from "lucide-react";
-import { FaCog, FaUniversity } from "react-icons/fa";
+import { FaCog } from "react-icons/fa";
 import { useCurrentUser, signOut } from "../auth";
 
 const navClass = ({ isActive }) =>
@@ -52,14 +53,14 @@ export default function Sidebar() {
           <span>Transactions</span>
         </NavLink>
 
-        <NavLink to="/bank-sharing" className={navClass}>
-          <FaUniversity size={17} />
-          <span>Bank sharing</span>
-        </NavLink>
-
         <NavLink to="/recurring-expenses" className={navClass}>
           <Repeat2 size={19} />
           <span>Recurring & quick</span>
+        </NavLink>
+
+        <NavLink to="/budget" className={navClass}>
+          <Landmark size={18} />
+          <span>Bank & limits</span>
         </NavLink>
 
         <NavLink to="/download" className={navClass}>

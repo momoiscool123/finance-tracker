@@ -3,14 +3,15 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
-import BankSharing from "./pages/BankSharing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import "./styles/dashboard.css";
 import Settings from "./pages/Settings";
 import RecurringExpenses from "./pages/RecurringExpenses";
 import DownloadPage from "./pages/Download";
+import Budget from "./pages/Budget";
 import { TransactionProvider } from "./context/TransactionContext";
+import { BudgetProvider } from "./context/BudgetContext";
 import { applyStoredAccent, applyStoredTheme } from "./utils/theme";
 
 // Route table.
@@ -32,19 +33,21 @@ export default function App() {
 
   return (
     <TransactionProvider>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+      <BudgetProvider>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/transactions" element={<Transactions />} />
-          <Route path="/bank-sharing" element={<BankSharing />} />
-          <Route path="/recurring-expenses" element={<RecurringExpenses />} />
-          <Route path="/download" element={<DownloadPage />} />
-          <Route path="/settings" element={<Settings />} />
-        </Route>
-      </Routes>
+          <Route element={<Layout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/recurring-expenses" element={<RecurringExpenses />} />
+            <Route path="/budget" element={<Budget />} />
+            <Route path="/download" element={<DownloadPage />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </BudgetProvider>
     </TransactionProvider>
   );
 }

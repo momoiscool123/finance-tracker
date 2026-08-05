@@ -1319,3 +1319,57 @@ margin:auto;
     border: 1px solid var(--border);
     transition: transform .12s ease;   /* glide when it dodges */
 }
+
+/* ---- Bank & limits page: monthly spending limit + approach advice ---- */
+.bg-section { margin-bottom: 20px; }
+
+.bg-field { display: grid; gap: 7px; }
+.bg-field > span { font-size: 12.5px; font-weight: 600; color: var(--text); opacity: .7; }
+.bg-field input {
+    width: 100%; height: 46px; padding: 0 14px;
+    border-radius: 12px; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text);
+    font-family: inherit; font-size: 15px; font-weight: 600;
+}
+.bg-field input:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.bg-meta {
+    display: flex; justify-content: space-between;
+    font-size: 12.5px; font-weight: 600; color: var(--text); opacity: .7;
+    margin: 18px 0 6px;
+}
+.bg-bar {
+    height: 10px; border-radius: 99px;
+    background: color-mix(in srgb, var(--text) 10%, transparent);
+    overflow: hidden;
+}
+.bg-bar--lg { height: 14px; }
+.bg-bar__fill { height: 100%; border-radius: 99px; transition: width .35s ease, background .2s ease; }
+.bg-bar__fill--coral { background: var(--accent); }
+.bg-bar__fill--amber { background: #e8a33d; }
+.bg-bar__fill--red { background: #e5484d; }
+
+.bg-advice {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-top: 16px; padding: 12px 14px;
+    border-radius: 12px; border: 1px solid var(--border);
+    background: var(--panel-2);
+}
+.bg-advice p { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--text); }
+.bg-advice svg { flex: none; margin-top: 1px; }
+.bg-advice--good { border-color: color-mix(in srgb, #1aa39b 40%, var(--border)); }
+.bg-advice--good svg { color: #1aa39b; }
+.bg-advice--info svg { color: var(--accent); }
+.bg-advice--warn {
+    border-color: color-mix(in srgb, #e8a33d 50%, var(--border));
+    background: color-mix(in srgb, #e8a33d 10%, var(--panel-2));
+}
+.bg-advice--warn svg { color: #e8a33d; }
+.bg-advice--bad {
+    border-color: color-mix(in srgb, #e5484d 50%, var(--border));
+    background: color-mix(in srgb, #e5484d 10%, var(--panel-2));
+}
+.bg-advice--bad svg { color: #e5484d; }
