@@ -60,3 +60,33 @@ export function deleteTransaction(id) {
 export function categorizeMerchant(merchant) {
   return request("/categorize", { method: "POST", body: { merchant } });
 }
+
+// --- recurring subscriptions ---
+export function listRecurringExpenses() {
+  return request("/recurring-expenses");
+}
+
+export function createRecurringExpense(payload) {
+  return request("/recurring-expenses", { method: "POST", body: payload });
+}
+
+export function deleteRecurringExpense(id) {
+  return request(`/recurring-expenses/${id}`, { method: "DELETE" });
+}
+
+// --- reusable one-tap expenses (fuel, parking, etc.) ---
+export function listQuickExpenses() {
+  return request("/quick-expenses");
+}
+
+export function createQuickExpense(payload) {
+  return request("/quick-expenses", { method: "POST", body: payload });
+}
+
+export function logQuickExpense(id) {
+  return request(`/quick-expenses/${id}/log`, { method: "POST" });
+}
+
+export function deleteQuickExpense(id) {
+  return request(`/quick-expenses/${id}`, { method: "DELETE" });
+}
