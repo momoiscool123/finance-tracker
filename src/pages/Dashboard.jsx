@@ -28,6 +28,7 @@ import {
   money,
 } from "../data/finance";
 import { useTransactions } from "../context/TransactionContext";
+import { useCurrentUser } from "../auth";
 
 function greeting() {
   const hour = new Date().getHours();
@@ -40,6 +41,8 @@ export default function Dashboard() {
   const [grain, setGrain] = useState("Monthly");
   const [activeSlice, setActiveSlice] = useState(null);
   const { transactions } = useTransactions();
+  const user = useCurrentUser();
+  const avatarInitial = (user?.name?.[0] || "U").toUpperCase();
 
   const SUMMARY = useMemo(() => deriveSummary(transactions), [transactions]);
 
@@ -60,7 +63,7 @@ export default function Dashboard() {
         </p>
 
         <h1 className="ft-header__title">
-            Welcome back, Testing
+            Welcome back, {user?.name || "there"}
         </h1>
 
         <p className="ft-header__sub">
@@ -78,7 +81,7 @@ export default function Dashboard() {
         <div className="ft-profile">
 
             <div className="ft-profile__avatar">
-                T
+                {avatarInitial}
             </div>
 
         </div>

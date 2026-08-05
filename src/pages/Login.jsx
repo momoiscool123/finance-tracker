@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api";
 import { useTransactions } from "../context/TransactionContext";
+import { loadUser } from "../auth";
 
 import "../styles/login.css";
 
@@ -49,7 +50,8 @@ export default function Login() {
       const data = await loginUser({ email: cleanEmail, password });
       // Save the JWT so future requests can prove who we are.
       localStorage.setItem("token", data.access_token);
-      await loadTransactions(); // pull this user's transactions right after login
+      // fetch the user's profile + transactions before showing the dashboard
+      await Promise.all([loadUser(), loadTransactions()]);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);

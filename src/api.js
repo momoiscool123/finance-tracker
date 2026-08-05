@@ -34,6 +34,11 @@ export function loginUser({ email, password }) {
   return request("/auth/login", { method: "POST", body: { email, password } });
 }
 
+// GET /auth/me -> { user_id, name, email } for the logged-in user
+export function getCurrentUser() {
+  return request("/auth/me");
+}
+
 // --- transactions (protected — need the token) ---
 // POST /transactions -> the created transaction (with items)
 export function createTransaction(payload) {

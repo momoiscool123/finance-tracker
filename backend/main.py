@@ -156,6 +156,16 @@ def login_user(request: LoginRequest, session=Depends(get_session)):
 
     return {"access_token": token, "token_type": "bearer"}
 
+
+@app.get("/auth/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    # "Who am I?" — reads the token and returns the current user's basic info.
+    return {
+        "user_id": current_user.user_id,
+        "name": current_user.name,
+        "email": current_user.email,
+    }
+
 # ---------------------------------------------------------------------------
 # Transaction routes
 # ---------------------------------------------------------------------------
