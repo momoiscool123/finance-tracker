@@ -4,6 +4,7 @@ import {
   ArrowLeftRight,
   LogOut,
   Wallet,
+  Repeat2,
 } from "lucide-react";
 import { FaCog, FaUniversity } from "react-icons/fa";
 import { useCurrentUser, signOut } from "../auth";
@@ -53,6 +54,11 @@ export default function Sidebar() {
         <NavLink to="/bank-sharing" className={navClass}>
           <FaUniversity size={17} />
           <span>Bank sharing</span>
+        </NavLink>
+
+        <NavLink to="/recurring-expenses" className={navClass}>
+          <Repeat2 size={19} />
+          <span>Recurring & quick</span>
         </NavLink>
 
         <NavLink to="/settings" className={navClass}>

@@ -1,14 +1,15 @@
 import os
 from datetime import datetime, timedelta, timezone
 from datetime import date as date_type
+from calendar import monthrange
 from typing import List, Optional
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import bcrypt
 from sqlmodel import select, Session
-from database import get_session
-from models import User, Transaction, Item
+from database import create_db_and_tables, get_session
+from models import User, Transaction, Item, RecurringExpense, QuickExpense
 from pydantic import BaseModel
 import jwt
 from dotenv import load_dotenv
@@ -23,6 +24,13 @@ ALGORITHM = "HS256"                        # signing algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = 60           # how long a token stays valid
 
 app = FastAPI()
+
+
+@app.on_event("startup")
+def create_tables_on_startup():
+    # New installations—and existing SQLite databases—get the recurring tables
+    # automatically. SQLModel only creates tables that are missing.
+    create_db_and_tables()
 
 # Allow the React dev server to call this API from the browser (CORS).
 # Without this, the browser blocks requests from localhost:3000 to localhost:8000.
@@ -80,6 +88,29 @@ class TransactionOut(BaseModel):
     date: str
     category: Optional[str]
     items: List[ItemOut]
+
+
+class RecurringExpenseIn(BaseModel):
+    description: str
+    category: str
+    amount: int  # piastres
+    frequency: str  # weekly | monthly
+    next_due_date: str
+
+
+class RecurringExpenseOut(RecurringExpenseIn):
+    recurring_expense_id: int
+    active: bool
+
+
+class QuickExpenseIn(BaseModel):
+    description: str
+    category: str
+    amount: int  # piastres
+
+
+class QuickExpenseOut(QuickExpenseIn):
+    quick_expense_id: int
     
 # ---------------------------------------------------------------------------
 # Dependency: get the current authenticated user from the Bearer token
@@ -99,6 +130,76 @@ def get_current_user(
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
+
+
+def validate_expense_input(description: str, category: str, amount: int) -> tuple[str, str]:
+    """Keep recurring/template data valid even if a client bypasses the UI."""
+    clean_description = description.strip()
+    clean_category = category.strip()
+    if not clean_description:
+        raise HTTPException(status_code=400, detail="A description is required")
+    if not clean_category:
+        raise HTTPException(status_code=400, detail="A category is required")
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be above zero")
+    return clean_description, clean_category
+
+
+def parse_due_date(value: str) -> date_type:
+    try:
+        return date_type.fromisoformat(value)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Use a valid due date (YYYY-MM-DD)")
+
+
+def advance_due_date(current: date_type, frequency: str) -> date_type:
+    if frequency == "weekly":
+        return current + timedelta(days=7)
+    if frequency == "monthly":
+        month = 1 if current.month == 12 else current.month + 1
+        year = current.year + 1 if current.month == 12 else current.year
+        return date_type(year, month, min(current.day, monthrange(year, month)[1]))
+    raise HTTPException(status_code=400, detail="Frequency must be weekly or monthly")
+
+
+def create_transaction_row(user_id: int, description: str, category: str, amount: int, when: date_type):
+    """Build one normal transaction so generated and manual expenses look identical."""
+    return Transaction(
+        user_id=user_id,
+        description=description,
+        category=category,
+        date=when.isoformat(),
+        price=amount,
+        items=[Item(item_name=description, item_price=amount)],
+    )
+
+
+def apply_due_recurring_expenses(current_user: User, session: Session) -> None:
+    """Materialise every due subscription once, including missed periods.
+
+    This runs when the signed-in user fetches their transactions, so no separate
+    background server or cron job is required for this local application.
+    """
+    today = date_type.today()
+    rules = (
+        session.query(RecurringExpense)
+        .filter(RecurringExpense.user_id == current_user.user_id, RecurringExpense.active == True)
+        .all()
+    )
+    changed = False
+    for rule in rules:
+        due = parse_due_date(rule.next_due_date)
+        while due <= today:
+            session.add(
+                create_transaction_row(
+                    current_user.user_id, rule.description, rule.category, rule.amount, due
+                )
+            )
+            due = advance_due_date(due, rule.frequency)
+            changed = True
+        rule.next_due_date = due.isoformat()
+    if changed:
+        session.commit()
 
 
 @app.post("/auth/register")
@@ -199,6 +300,9 @@ def list_transactions(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
+    # Make weekly/monthly subscriptions appear as normal dated transactions
+    # before returning the ledger.
+    apply_due_recurring_expenses(current_user, session)
     return (
         session.query(Transaction)
         .filter(Transaction.user_id == current_user.user_id)
@@ -230,5 +334,128 @@ def delete_transaction(
         raise HTTPException(status_code=404, detail="Transaction not found")
 
     session.delete(transaction)  # cascade also removes its items
+    session.commit()
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Recurring subscriptions and quick expenses
+# ---------------------------------------------------------------------------
+@app.get("/recurring-expenses", response_model=List[RecurringExpenseOut])
+def list_recurring_expenses(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    apply_due_recurring_expenses(current_user, session)
+    return (
+        session.query(RecurringExpense)
+        .filter(RecurringExpense.user_id == current_user.user_id)
+        .order_by(RecurringExpense.next_due_date)
+        .all()
+    )
+
+
+@app.post("/recurring-expenses", response_model=RecurringExpenseOut, status_code=201)
+def create_recurring_expense(
+    request: RecurringExpenseIn,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    description, category = validate_expense_input(request.description, request.category, request.amount)
+    if request.frequency not in {"weekly", "monthly"}:
+        raise HTTPException(status_code=400, detail="Frequency must be weekly or monthly")
+    due = parse_due_date(request.next_due_date)
+    rule = RecurringExpense(
+        user_id=current_user.user_id,
+        description=description,
+        category=category,
+        amount=request.amount,
+        frequency=request.frequency,
+        next_due_date=due.isoformat(),
+    )
+    session.add(rule)
+    session.commit()
+    session.refresh(rule)
+    return rule
+
+
+@app.delete("/recurring-expenses/{recurring_expense_id}", status_code=204)
+def delete_recurring_expense(
+    recurring_expense_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    rule = session.get(RecurringExpense, recurring_expense_id)
+    if not rule or rule.user_id != current_user.user_id:
+        raise HTTPException(status_code=404, detail="Recurring expense not found")
+    session.delete(rule)
+    session.commit()
+    return None
+
+
+@app.get("/quick-expenses", response_model=List[QuickExpenseOut])
+def list_quick_expenses(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    return (
+        session.query(QuickExpense)
+        .filter(QuickExpense.user_id == current_user.user_id)
+        .order_by(QuickExpense.description)
+        .all()
+    )
+
+
+@app.post("/quick-expenses", response_model=QuickExpenseOut, status_code=201)
+def create_quick_expense(
+    request: QuickExpenseIn,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    description, category = validate_expense_input(request.description, request.category, request.amount)
+    shortcut = QuickExpense(
+        user_id=current_user.user_id,
+        description=description,
+        category=category,
+        amount=request.amount,
+    )
+    session.add(shortcut)
+    session.commit()
+    session.refresh(shortcut)
+    return shortcut
+
+
+@app.post("/quick-expenses/{quick_expense_id}/log", response_model=TransactionOut, status_code=201)
+def log_quick_expense(
+    quick_expense_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    shortcut = session.get(QuickExpense, quick_expense_id)
+    if not shortcut or shortcut.user_id != current_user.user_id:
+        raise HTTPException(status_code=404, detail="Quick expense not found")
+    transaction = create_transaction_row(
+        current_user.user_id,
+        shortcut.description,
+        shortcut.category,
+        shortcut.amount,
+        date_type.today(),
+    )
+    session.add(transaction)
+    session.commit()
+    session.refresh(transaction)
+    return transaction
+
+
+@app.delete("/quick-expenses/{quick_expense_id}", status_code=204)
+def delete_quick_expense(
+    quick_expense_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    shortcut = session.get(QuickExpense, quick_expense_id)
+    if not shortcut or shortcut.user_id != current_user.user_id:
+        raise HTTPException(status_code=404, detail="Quick expense not found")
+    session.delete(shortcut)
     session.commit()
     return None

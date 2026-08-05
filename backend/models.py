@@ -63,3 +63,32 @@ class Item(SQLModel, table=True):
     item_price: int  # in piastres
 
     transaction: Optional[Transaction] = Relationship(back_populates="items")
+
+
+class RecurringExpense(SQLModel, table=True):
+    """A subscription or bill that creates a transaction every week or month."""
+
+    __tablename__ = "recurring_expenses"
+
+    recurring_expense_id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.user_id", index=True)
+    description: str
+    category: str
+    # Stored in piastres, just like Transaction.price.
+    amount: int
+    frequency: str  # "weekly" or "monthly"
+    next_due_date: str  # ISO 8601 date
+    active: bool = Field(default=True)
+
+
+class QuickExpense(SQLModel, table=True):
+    """A reusable one-tap expense, such as fuel or parking."""
+
+    __tablename__ = "quick_expenses"
+
+    quick_expense_id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.user_id", index=True)
+    description: str
+    category: str
+    # Stored in piastres.
+    amount: int
