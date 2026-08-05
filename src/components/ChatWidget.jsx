@@ -1,11 +1,45 @@
 import { useState, useRef, useEffect } from "react";
 import { OPENING_MESSAGES, SUGGESTIONS, replyTo } from "../data/chat";
+import { useTransactions } from "../context/TransactionContext";
+import {
+  FOOD_STEPS,
+  isFoodRequest,
+  CANCEL,
+  parseArea,
+  parsePeople,
+  parseBudget,
+  parseCuisine,
+  recommendRestaurants,
+} from "../data/foodChat";
+
+// Inline styles for the restaurant recommendation cards (keeps this
+// feature self-contained — no extra CSS file to wire up).
+const REC = {
+  wrap: { display: "grid", gap: 8, marginTop: 10 },
+  card: {
+    display: "block",
+    textDecoration: "none",
+    color: "inherit",
+    border: "1px solid rgba(120,120,120,0.25)",
+    borderRadius: 12,
+    padding: "10px 12px",
+    background: "rgba(255,255,255,0.5)",
+  },
+  top: { display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" },
+  name: { fontWeight: 700, fontSize: 14 },
+  price: { fontSize: 12, opacity: 0.85, whiteSpace: "nowrap" },
+  meta: { display: "block", fontSize: 12, opacity: 0.7, marginTop: 2 },
+  blurb: { display: "block", fontSize: 12, opacity: 0.9, marginTop: 4 },
+};
 
 export default function ChatWidget() {
+  const { transactions } = useTransactions();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState(OPENING_MESSAGES);
   const [draft, setDraft] = useState("");
   const [typing, setTyping] = useState(false);
+  // Non-null while the "where should I eat?" flow is running.
+  const [food, setFood] = useState(null); // { stepIndex, answers }
 
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -27,22 +61,103 @@ export default function ChatWidget() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const pushUser = (text) =>
+    setMessages((m) => [...m, { id: nextId.current++, from: "user", text }]);
+
+  // Show the typing indicator briefly, then run `fn` (which adds bot messages).
+  const botReply = (fn) => {
+    setTyping(true);
+    setTimeout(() => {
+      setTyping(false);
+      fn();
+    }, 600);
+  };
+  const botSay = (text, extra = {}) =>
+    setMessages((m) => [...m, { id: nextId.current++, from: "bot", text, ...extra }]);
+
+  const retryMessage = (key) => {
+    if (key === "area") return "I didn't catch that area — tap one below, or type e.g. \"Maadi\".";
+    if (key === "people") return "How many people? A number like 2 or 5 works.";
+    if (key === "budget") return "What's your budget per person in EGP? Try a number like 150.";
+    return "Pick a cuisine below, or say \"Any\".";
+  };
+
+  const buildIntro = (a, widenedArea) => {
+    const who = `${a.people} ${a.people === 1 ? "person" : "people"}`;
+    const cuisine = a.cuisine && a.cuisine !== "Any" ? ` · ${a.cuisine}` : "";
+    const widen = widenedArea ? ` Not many in ${a.area}, so I widened the search.` : "";
+    return `For ${who} in ${a.area}${cuisine} up to EGP ${a.budget}/person, try:${widen}`;
+  };
+
+  const handleFoodStep = (text, flow) => {
+    const step = FOOD_STEPS[flow.stepIndex];
+    const value =
+      step.key === "area"
+        ? parseArea(text)
+        : step.key === "people"
+        ? parsePeople(text)
+        : step.key === "budget"
+        ? parseBudget(text)
+        : parseCuisine(text); // cuisine always resolves (falls back to "Any")
+
+    if (step.key !== "cuisine" && !value) {
+      botReply(() => botSay(retryMessage(step.key)));
+      return;
+    }
+
+    const answers = { ...flow.answers, [step.key]: value };
+    const nextIndex = flow.stepIndex + 1;
+
+    if (nextIndex < FOOD_STEPS.length) {
+      setFood({ stepIndex: nextIndex, answers });
+      botReply(() => botSay(FOOD_STEPS[nextIndex].question));
+      return;
+    }
+
+    // Final step done — produce recommendations.
+    setFood(null);
+    const { list, widenedArea } = recommendRestaurants(answers);
+    botReply(() => {
+      if (!list.length) {
+        botSay("I couldn't find a good match. Try a different area or a higher budget.");
+        return;
+      }
+      botSay(buildIntro(answers, widenedArea), { cards: list });
+    });
+  };
+
   const send = (text) => {
     const clean = text.trim();
     if (!clean) return;
 
-    setMessages((m) => [...m, { id: nextId.current++, from: "user", text: clean }]);
+    pushUser(clean);
     setDraft("");
-    setTyping(true);
 
-    setTimeout(() => {
-      setTyping(false);
-      setMessages((m) => [
-        ...m,
-        { id: nextId.current++, from: "bot", text: replyTo(clean) },
-      ]);
-    }, 700);
+    // Mid-flow: treat the message as the current question's answer.
+    if (food) {
+      if (CANCEL.test(clean)) {
+        setFood(null);
+        botReply(() =>
+          botSay('No worries — cancelled. Ask me about your spending, or say "where should I eat".')
+        );
+        return;
+      }
+      handleFoodStep(clean, food);
+      return;
+    }
+
+    // Start the food flow on a food request.
+    if (isFoodRequest(clean)) {
+      setFood({ stepIndex: 0, answers: {} });
+      botReply(() => botSay(FOOD_STEPS[0].question));
+      return;
+    }
+
+    // Otherwise answer from the user's transaction data.
+    botReply(() => botSay(replyTo(clean, transactions)));
   };
+
+  const activeChips = food && !typing ? FOOD_STEPS[food.stepIndex]?.chips : null;
 
   return (
     <div className="fc">
@@ -59,7 +174,9 @@ export default function ChatWidget() {
               <span className="fc-head__name">Assistant</span>
               <span className="fc-head__status">
                 <i className="fc-dot" aria-hidden="true" />
-                Preview — no data connected
+                {transactions.length
+                  ? `Using your ${transactions.length} transaction${transactions.length === 1 ? "" : "s"}`
+                  : "No transactions yet"}
               </span>
             </span>
             <button
@@ -79,6 +196,42 @@ export default function ChatWidget() {
             {messages.map((m) => (
               <div key={m.id} className={`fc-msg fc-msg--${m.from}`}>
                 {m.text}
+                {m.cards && (
+                  <div style={REC.wrap}>
+                    {m.cards.map((r) => (
+                      <a
+                        key={r.name}
+                        style={REC.card}
+                        href={r.mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span style={REC.top}>
+                          <span style={REC.name}>{r.name}</span>
+                          <span style={REC.price}>~EGP {r.pricePerPerson}/person</span>
+                        </span>
+                        <span style={REC.meta}>
+                          {r.area} · {r.cuisine} · ★ {r.rating}
+                          {r.budgetFit && (
+                            <span
+                              style={{
+                                color:
+                                  r.budgetFit === "within budget"
+                                    ? "#2ebd85"
+                                    : r.budgetFit === "just over budget"
+                                    ? "#e8a33d"
+                                    : "#e5484d",
+                              }}
+                            >
+                              {" "}· {r.budgetFit}
+                            </span>
+                          )}
+                        </span>
+                        <span style={REC.blurb}>{r.blurb}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
 
@@ -88,7 +241,21 @@ export default function ChatWidget() {
               </div>
             )}
 
-            {messages.length === 1 && !typing && (
+            {/* Quick replies: food-flow chips while a flow is running,
+                otherwise the opening suggestions on the first message. */}
+            {activeChips && (
+              <ul className="fc-chips">
+                {activeChips.map((c) => (
+                  <li key={c}>
+                    <button type="button" className="fc-chip" onClick={() => send(c)}>
+                      {c}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {!food && messages.length === 1 && !typing && (
               <ul className="fc-chips">
                 {SUGGESTIONS.map((s) => (
                   <li key={s}>
@@ -106,7 +273,7 @@ export default function ChatWidget() {
               ref={inputRef}
               className="fc-input"
               value={draft}
-              placeholder="Ask about your spending"
+              placeholder={food ? "Type your answer…" : "Ask about your spending"}
               aria-label="Message"
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send(draft)}

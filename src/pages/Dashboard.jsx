@@ -21,10 +21,10 @@ import RangeCandle from "../components/RangeCandle";
 import { icons } from "../components/Icon";
 import {
   CATEGORY_COLORS,
-  CATEGORY_BREAKDOWN,
-  TIMELINE,
-  RANGE_DATA,
   deriveSummary,
+  deriveCategoryBreakdown,
+  deriveTimeline,
+  deriveRange,
   money,
 } from "../data/finance";
 import { useTransactions } from "../context/TransactionContext";
@@ -37,6 +37,25 @@ function greeting() {
   return "Good evening";
 }
 
+// Placeholder shown inside a chart panel before the user logs any spending,
+// so the layout stays put instead of rendering empty axes.
+function ChartEmpty({ height = 200 }) {
+  return (
+    <div
+      style={{
+        height,
+        display: "grid",
+        placeItems: "center",
+        textAlign: "center",
+        color: "#7d8590",
+        fontSize: 14,
+      }}
+    >
+      Add a transaction to see this chart.
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [grain, setGrain] = useState("Monthly");
   const [activeSlice, setActiveSlice] = useState(null);
@@ -44,12 +63,17 @@ export default function Dashboard() {
   const user = useCurrentUser();
   const avatarInitial = (user?.name?.[0] || "U").toUpperCase();
 
-  const SUMMARY = useMemo(() => deriveSummary(transactions), [transactions]);
+  const hasData = transactions.length > 0;
 
-  const timeline = TIMELINE[grain];
+  const SUMMARY = useMemo(() => deriveSummary(transactions), [transactions]);
+  const breakdown = useMemo(() => deriveCategoryBreakdown(transactions), [transactions]);
+  const timelineAll = useMemo(() => deriveTimeline(transactions), [transactions]);
+  const range = useMemo(() => deriveRange(transactions), [transactions]);
+
+  const timeline = timelineAll[grain];
   const rangeSeries = useMemo(
-    () => RANGE_DATA.map((d) => ({ ...d, range: [d.min, d.max] })),
-    []
+    () => range.map((d) => ({ ...d, range: [d.min, d.max] })),
+    [range]
   );
 
   return (
@@ -124,14 +148,17 @@ export default function Dashboard() {
       <div className="ft-row">
         <Panel
           title="Category breakdown"
-          subtitle="Transaction frequency · all time"
+          subtitle="Share of spending · all time"
           className="ft-panel--donut"
         >
+          {!hasData ? (
+            <ChartEmpty />
+          ) : (
           <div className="ft-donut">
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
-                  data={CATEGORY_BREAKDOWN}
+                  data={breakdown}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
@@ -159,7 +186,7 @@ export default function Dashboard() {
                     );
                   }}
                 >
-                  {CATEGORY_BREAKDOWN.map((entry, i) => (
+                  {breakdown.map((entry, i) => (
                     <Cell
                       key={entry.name}
                       fill={CATEGORY_COLORS[entry.name]}
@@ -177,7 +204,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
 
             <ul className="ft-legend">
-              {CATEGORY_BREAKDOWN.map((c) => (
+              {breakdown.map((c) => (
                 <li key={c.name} className="ft-legend__item">
                   <span
                     className="ft-legend__dot"
@@ -188,6 +215,7 @@ export default function Dashboard() {
               ))}
             </ul>
           </div>
+          )}
         </Panel>
 
         <Panel
@@ -211,6 +239,9 @@ export default function Dashboard() {
             </div>
           }
         >
+          {!hasData ? (
+            <ChartEmpty />
+          ) : (
           <ResponsiveContainer width="100%" height={200}>
             <ComposedChart
               data={timeline}
@@ -255,6 +286,7 @@ export default function Dashboard() {
               />
             </ComposedChart>
           </ResponsiveContainer>
+          )}
         </Panel>
       </div>
 
@@ -262,6 +294,9 @@ export default function Dashboard() {
         title="Category range analysis"
         subtitle={`${SUMMARY.period} · Candlestick per category showing min · max · average purchase amount`}
       >
+        {!hasData ? (
+          <ChartEmpty height={260} />
+        ) : (
         <ResponsiveContainer width="100%" height={260}>
           <ComposedChart
             data={rangeSeries}
@@ -280,8 +315,7 @@ export default function Dashboard() {
               axisLine={false}
               tick={{ fill: "#7d8590", fontSize: 10 }}
               tickFormatter={(v) => `EGP ${v}`}
-              domain={[0, 2800]}
-              ticks={[0, 700, 1400, 2100, 2800]}
+              domain={[0, "auto"]}
               width={72}
             />
             <Tooltip
@@ -310,18 +344,12 @@ export default function Dashboard() {
             />
             <Bar dataKey="range" shape={<RangeCandle />} maxBarSize={30}>
               {rangeSeries.map((d) => (
-                <Cell
-                  key={d.name}
-                  fill={
-                    Object.values(CATEGORY_COLORS)[
-                    RANGE_DATA.findIndex((r) => r.name === d.name)
-                    ]
-                  }
-                />
+                <Cell key={d.name} fill={CATEGORY_COLORS[d.name]} />
               ))}
             </Bar>
           </ComposedChart>
         </ResponsiveContainer>
+        )}
 
         <ul className="ft-keys">
           <li>

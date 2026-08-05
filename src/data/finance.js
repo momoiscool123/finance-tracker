@@ -107,3 +107,109 @@ export const deriveSummary = (transactions) => {
 
   return { totalSpent, transactions: count, avgPurchase, topCategory, topCategoryTotal, period };
 };
+
+/* ==================================================================
+ *  LIVE CHART DERIVATIONS
+ *  Each takes the real transaction list and returns the exact shape
+ *  the corresponding chart already expects — so the dashboard charts
+ *  update the moment a transaction is added or deleted.
+ * ================================================================== */
+
+// Donut: each category's share of total spending (by amount), as %.
+// Uses the largest-remainder method so the rounded percentages always add up
+// to exactly 100 (plain per-slice rounding can give 33+33+33 = 99).
+export const deriveCategoryBreakdown = (transactions) => {
+  if (!transactions.length) return [];
+
+  const totals = {};
+  transactions.forEach((t) => {
+    totals[t.category] = (totals[t.category] || 0) + t.amount;
+  });
+
+  const grandTotal = Object.values(totals).reduce((sum, a) => sum + a, 0);
+  if (grandTotal <= 0) return [];
+
+  const rows = Object.entries(totals).map(([name, amount]) => {
+    const exact = (amount / grandTotal) * 100;
+    return { name, value: Math.floor(exact), remainder: exact - Math.floor(exact) };
+  });
+
+  // Hand out the leftover points to the biggest rounded-down remainders.
+  let leftover = 100 - rows.reduce((sum, r) => sum + r.value, 0);
+  rows.sort((a, b) => b.remainder - a.remainder);
+  for (let i = 0; i < leftover; i++) rows[i % rows.length].value += 1;
+
+  return rows
+    .map(({ name, value }) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+};
+
+// Candlestick: min / max / average purchase amount per category.
+// Ordered by the fixed category list so colours/positions stay stable.
+export const deriveRange = (transactions) => {
+  const byCategory = {};
+  transactions.forEach((t) => {
+    (byCategory[t.category] = byCategory[t.category] || []).push(t.amount);
+  });
+
+  return Object.keys(CATEGORY_COLORS)
+    .filter((name) => byCategory[name])
+    .map((name) => {
+      const amounts = byCategory[name];
+      return {
+        name,
+        min: Math.round(Math.min(...amounts)),
+        max: Math.round(Math.max(...amounts)),
+        avg: Math.round(amounts.reduce((sum, a) => sum + a, 0) / amounts.length),
+      };
+    });
+};
+
+// Timeline: spend per bucket (Daily/Weekly/Monthly) with a running-average
+// line. `avg` is the cumulative mean of spend up to each bucket — the same
+// meaning the original sample data used.
+export const deriveTimeline = (transactions) => {
+  const shortDate = (iso) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  // Monday that starts the week containing `iso`.
+  const weekStart = (iso) => {
+    const d = new Date(`${iso}T00:00:00`);
+    const dayFromMonday = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - dayFromMonday);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const years = new Set(
+    transactions.map((t) => (t.date || "").slice(0, 4)).filter(Boolean)
+  );
+  const monthLabel = (ym) =>
+    new Date(`${ym}-01T00:00:00`).toLocaleDateString(
+      "en-US",
+      years.size > 1 ? { month: "short", year: "2-digit" } : { month: "short" }
+    );
+
+  // Group by a key, keep the most recent `limit` buckets, add running average.
+  const build = (keyOf, labelOf, limit) => {
+    const totals = new Map();
+    transactions.forEach((t) => {
+      if (!t.date) return;
+      const key = keyOf(t.date);
+      totals.set(key, (totals.get(key) || 0) + t.amount);
+    });
+
+    const keys = [...totals.keys()].sort().slice(-limit);
+    let runningSum = 0;
+    return keys.map((key, i) => {
+      const spend = Math.round(totals.get(key));
+      runningSum += spend;
+      return { label: labelOf(key), spend, avg: Math.round(runningSum / (i + 1)) };
+    });
+  };
+
+  return {
+    Daily: build((iso) => iso, shortDate, 14),
+    Weekly: build(weekStart, shortDate, 8),
+    Monthly: build((iso) => iso.slice(0, 7), monthLabel, 12),
+  };
+};
