@@ -7,6 +7,7 @@ import {
   Repeat2,
   Download,
   Landmark,
+  PiggyBank,
 } from "lucide-react";
 import { FaCog } from "react-icons/fa";
 import { useCurrentUser, signOut } from "../auth";
@@ -56,6 +57,11 @@ export default function Sidebar() {
         <NavLink to="/recurring-expenses" className={navClass}>
           <Repeat2 size={19} />
           <span>Recurring & quick</span>
+        </NavLink>
+
+        <NavLink to="/savings" className={navClass}>
+          <PiggyBank size={19} />
+          <span>Savings goals</span>
         </NavLink>
 
         <NavLink to="/budget" className={navClass}>

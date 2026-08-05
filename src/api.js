@@ -79,6 +79,31 @@ export function categorizeMerchant(merchant) {
   return request("/categorize", { method: "POST", body: { merchant } });
 }
 
+// --- savings goals ("buckets") ---
+// GET /goals -> [{ goal_id, name, target_amount, saved_amount, ... , contributions }]
+export function listGoals() {
+  return request("/goals");
+}
+
+// POST /goals -> the created goal
+export function createGoal(payload) {
+  return request("/goals", { method: "POST", body: payload });
+}
+
+// POST /goals/{id}/contributions -> the updated goal
+// `date` (YYYY-MM-DD) is optional; the backend defaults to now when omitted.
+export function addContribution(goalId, amount, date) {
+  return request(`/goals/${goalId}/contributions`, {
+    method: "POST",
+    body: { amount, date },
+  });
+}
+
+// DELETE /goals/{id} -> 204 No Content
+export function deleteGoal(goalId) {
+  return request(`/goals/${goalId}`, { method: "DELETE" });
+}
+
 // --- recurring subscriptions ---
 export function listRecurringExpenses() {
   return request("/recurring-expenses");

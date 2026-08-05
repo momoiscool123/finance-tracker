@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import "./styles/dashboard.css";
 import Settings from "./pages/Settings";
 import RecurringExpenses from "./pages/RecurringExpenses";
+import SavingsGoals from "./pages/SavingsGoals";
 import DownloadPage from "./pages/Download";
 import Budget from "./pages/Budget";
 import { TransactionProvider } from "./context/TransactionContext";
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/recurring-expenses" element={<RecurringExpenses />} />
+            <Route path="/savings" element={<SavingsGoals />} />
             <Route path="/budget" element={<Budget />} />
             <Route path="/download" element={<DownloadPage />} />
             <Route path="/settings" element={<Settings />} />

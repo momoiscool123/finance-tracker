@@ -1,0 +1,338 @@
+/* ==========================================================================
+   Savings goals ("buckets") — styled to match the app: CSS variables, the
+   coral --accent, and semantic green/red/amber.
+   ========================================================================== */
+
+.sg-message {
+  margin: 0 0 18px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+.sg-message--error {
+  background: color-mix(in srgb, #e5484d 12%, transparent);
+  color: #e5484d;
+}
+
+/* ---- create form ---- */
+.sg-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 4px;
+}
+.sg-form__full {
+  grid-column: 1 / -1;
+}
+.sg-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+.sg-form input,
+.sg-form select {
+  padding: 11px 13px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+}
+.sg-form input:focus,
+.sg-form select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.sg-form__actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.sg-btn-ghost {
+  padding: 11px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-light);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.sg-btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---- goal cards grid ---- */
+.sg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 8px;
+}
+.sg-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.sg-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.sg-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+.sg-card__name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+}
+.sg-del {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-mute);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+.sg-del:hover {
+  background: color-mix(in srgb, #e5484d 14%, transparent);
+  color: #e5484d;
+}
+
+.sg-card__amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.sg-card__amount span {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-mute);
+}
+
+.sg-progress {
+  height: 9px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  overflow: hidden;
+  margin: 12px 0 6px;
+}
+.sg-progress__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.sg-pct {
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.sg-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+/* ---- pace analysis box ---- */
+.sg-pace {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.sg-status {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.sg-pace__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-light);
+  padding: 2px 0;
+}
+.sg-pace__row span:last-child {
+  color: var(--text);
+  font-weight: 600;
+  text-align: right;
+}
+.sg-pace__row--muted span:last-child {
+  color: var(--text-light);
+  font-weight: 600;
+}
+.sg-pace__note {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  margin: 8px 0 2px;
+}
+
+/* ---- actions ---- */
+.sg-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+.sg-actions .ft-add-btn {
+  justify-content: center;
+  width: 100%;
+}
+.sg-history-btn {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-light);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.sg-history-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.sg-contrib {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sg-contrib__fields {
+  display: flex;
+  gap: 8px;
+}
+.sg-contrib__fields input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 14px;
+}
+.sg-contrib__fields input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.sg-contrib__actions {
+  display: flex;
+  gap: 8px;
+}
+.sg-contrib__actions .ft-add-btn {
+  width: auto;
+  flex: 1;
+}
+
+/* ---- contribution history ---- */
+.sg-history {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+}
+.sg-history__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 10px;
+}
+.sg-history__empty {
+  font-size: 13px;
+  color: var(--text-light);
+  text-align: center;
+}
+.sg-hist-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.sg-hist-amt {
+  font-weight: 700;
+  color: #2ebd85;
+  font-size: 14px;
+}
+.sg-hist-when {
+  font-size: 12px;
+  color: var(--text-light);
+}
+.sg-hist-total {
+  padding-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+/* ---- empty / loading ---- */
+.sg-empty {
+  color: var(--text-light);
+  font-size: 14px;
+  padding: 20px 0;
+}
+.sg-empty-panel {
+  background: var(--panel);
+  border: 1px dashed var(--border);
+  border-radius: 20px;
+  padding: 48px 24px;
+  text-align: center;
+}
+.sg-empty-panel__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.sg-empty-panel__sub {
+  font-size: 14px;
+  color: var(--text-light);
+  max-width: 420px;
+  margin: 0 auto 20px;
+  line-height: 1.6;
+}
+.sg-empty-panel .ft-add-btn {
+  display: inline-flex;
+}
+
+@media (max-width: 560px) {
+  .sg-form {
+    grid-template-columns: 1fr;
+  }
+}

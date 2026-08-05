@@ -92,3 +92,37 @@ class QuickExpense(SQLModel, table=True):
     category: str
     # Stored in piastres.
     amount: int
+
+
+class SavingsGoal(SQLModel, table=True):
+    """A named savings bucket the user is putting money toward (e.g. "Japan
+    trip"). The amount saved so far is the sum of its contributions."""
+
+    __tablename__ = "savings_goals"
+
+    goal_id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.user_id", index=True)
+    name: str
+    target_amount: int  # piastres
+    target_date: Optional[str] = Field(default=None)  # ISO 8601 date, optional
+    priority: str = Field(default="medium")  # low | medium | high
+    created_at: str  # ISO 8601 date
+
+    # Each deposit into the bucket; deleting the goal deletes its contributions.
+    contributions: List["Contribution"] = Relationship(
+        back_populates="goal",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+
+
+class Contribution(SQLModel, table=True):
+    """One deposit into a savings goal."""
+
+    __tablename__ = "contributions"
+
+    contribution_id: Optional[int] = Field(default=None, primary_key=True)
+    goal_id: int = Field(foreign_key="savings_goals.goal_id", index=True)
+    amount: int  # piastres
+    created_at: str  # ISO 8601 datetime
+
+    goal: Optional[SavingsGoal] = Relationship(back_populates="contributions")

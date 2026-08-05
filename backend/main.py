@@ -9,7 +9,10 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import bcrypt
 from sqlmodel import select, Session
 from database import create_db_and_tables, get_session
-from models import User, Transaction, Item, RecurringExpense, QuickExpense
+from models import (
+    User, Transaction, Item, RecurringExpense, QuickExpense,
+    SavingsGoal, Contribution,
+)
 from pydantic import BaseModel
 import jwt
 from dotenv import load_dotenv
@@ -596,5 +599,183 @@ def delete_quick_expense(
     if not shortcut or shortcut.user_id != current_user.user_id:
         raise HTTPException(status_code=404, detail="Quick expense not found")
     session.delete(shortcut)
+    session.commit()
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Savings goals ("buckets")
+# ---------------------------------------------------------------------------
+class ContributionOut(BaseModel):
+    contribution_id: int
+    amount: int          # piastres
+    created_at: str
+
+
+class ContributionIn(BaseModel):
+    amount: int                 # piastres
+    date: Optional[str] = None  # YYYY-MM-DD; defaults to "now" when omitted
+
+
+class SavingsGoalIn(BaseModel):
+    name: str
+    target_amount: int          # piastres
+    current_amount: int = 0     # optional starting balance, piastres
+    started_on: Optional[str] = None  # date of the starting balance (first contribution)
+    target_date: Optional[str] = None
+    priority: str = "medium"
+
+
+class SavingsGoalOut(BaseModel):
+    goal_id: int
+    name: str
+    target_amount: int
+    target_date: Optional[str]
+    priority: str
+    created_at: str
+    saved_amount: int                        # computed: sum of contributions
+    contributions: List[ContributionOut]
+
+
+def _goal_out(goal: SavingsGoal) -> dict:
+    ordered = sorted(goal.contributions, key=lambda c: c.created_at, reverse=True)
+    return {
+        "goal_id": goal.goal_id,
+        "name": goal.name,
+        "target_amount": goal.target_amount,
+        "target_date": goal.target_date,
+        "priority": goal.priority,
+        "created_at": goal.created_at,
+        "saved_amount": sum(c.amount for c in goal.contributions),
+        "contributions": [
+            {"contribution_id": c.contribution_id, "amount": c.amount, "created_at": c.created_at}
+            for c in ordered
+        ],
+    }
+
+
+def _contribution_datetime(picked: Optional[str], earliest: Optional[date_type]) -> str:
+    """Turn an optional picked date (YYYY-MM-DD) into the stored timestamp.
+
+    Rules: a date can't be in the future, and can't be before `earliest` (the
+    first contribution's date) when one is given. The very first contribution
+    passes earliest=None, so it may be any date up to today. Omitting the date
+    keeps the old behaviour ("now").
+    """
+    if not picked:
+        return datetime.now(timezone.utc).isoformat()
+    try:
+        day = date_type.fromisoformat(picked)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date")
+    if day > date_type.today():
+        raise HTTPException(status_code=400, detail="Date can't be in the future")
+    if earliest is not None and day < earliest:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Date can't be before the goal's start date ({earliest.isoformat()})",
+        )
+    return f"{picked}T12:00:00+00:00"
+
+
+@app.get("/goals", response_model=List[SavingsGoalOut])
+def list_goals(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    goals = (
+        session.query(SavingsGoal)
+        .filter(SavingsGoal.user_id == current_user.user_id)
+        .all()
+    )
+    return [_goal_out(g) for g in goals]
+
+
+@app.post("/goals", response_model=SavingsGoalOut, status_code=201)
+def create_goal(
+    request: SavingsGoalIn,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    name = request.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Give your goal a name")
+    if request.target_amount <= 0:
+        raise HTTPException(status_code=400, detail="Target amount must be above zero")
+    if request.priority not in {"low", "medium", "high"}:
+        raise HTTPException(status_code=400, detail="Priority must be low, medium, or high")
+
+    # Optional start date for the goal's timeline (defaults to today). It's the
+    # earliest date any contribution — including the opening balance — can carry.
+    start = date_type.today()
+    if request.started_on:
+        try:
+            start = date_type.fromisoformat(request.started_on)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start date")
+        if start > date_type.today():
+            raise HTTPException(status_code=400, detail="Start date can't be in the future")
+
+    goal = SavingsGoal(
+        user_id=current_user.user_id,
+        name=name,
+        target_amount=request.target_amount,
+        target_date=request.target_date or None,
+        priority=request.priority,
+        created_at=start.isoformat(),
+    )
+    # A non-zero starting balance becomes the first contribution, dated to the
+    # goal's start date, so the history and the saved total always agree.
+    if request.current_amount and request.current_amount > 0:
+        goal.contributions.append(
+            Contribution(
+                amount=request.current_amount,
+                created_at=f"{start.isoformat()}T12:00:00+00:00",
+            )
+        )
+
+    session.add(goal)
+    session.commit()
+    session.refresh(goal)
+    return _goal_out(goal)
+
+
+@app.post("/goals/{goal_id}/contributions", response_model=SavingsGoalOut, status_code=201)
+def add_contribution(
+    goal_id: int,
+    request: ContributionIn,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    goal = session.get(SavingsGoal, goal_id)
+    if not goal or goal.user_id != current_user.user_id:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    if request.amount <= 0:
+        raise HTTPException(status_code=400, detail="Contribution must be above zero")
+
+    # Contributions live between the goal's start date and today.
+    start = date_type.fromisoformat(goal.created_at[:10])
+    goal.contributions.append(
+        Contribution(
+            amount=request.amount,
+            created_at=_contribution_datetime(request.date, start),
+        )
+    )
+    session.add(goal)
+    session.commit()
+    session.refresh(goal)
+    return _goal_out(goal)
+
+
+@app.delete("/goals/{goal_id}", status_code=204)
+def delete_goal(
+    goal_id: int,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    goal = session.get(SavingsGoal, goal_id)
+    if not goal or goal.user_id != current_user.user_id:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    session.delete(goal)  # cascade removes its contributions
     session.commit()
     return None
