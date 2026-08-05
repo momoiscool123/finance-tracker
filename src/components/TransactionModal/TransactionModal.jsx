@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 
 import { useTransactions } from "../../context/TransactionContext";
+import { categorizeMerchant } from "../../api";
 import { CATEGORY_COLORS } from "../../data/finance";
 
 const CATEGORY_OPTIONS = [
@@ -35,7 +36,10 @@ export default function TransactionModal({ closeModal, onSaved }) {
   const [formData, setFormData] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [suggesting, setSuggesting] = useState(false); // waiting on /categorize
+  const [suggested, setSuggested] = useState(false);   // category was auto-filled
   const firstFieldRef = useRef(null);
+  const manualCategoryRef = useRef(false); // true once the user picks a category by hand
 
   useEffect(() => {
     firstFieldRef.current?.focus();
@@ -48,7 +52,49 @@ export default function TransactionModal({ closeModal, onSaved }) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
+    // If the user picks a category themselves, remember that and drop the
+    // "suggested" badge — it's their choice now, and live re-suggestion stops
+    // overwriting it.
+    if (name === "category") {
+      manualCategoryRef.current = true;
+      setSuggested(false);
+    }
   }
+
+  // Auto-suggest a category from the merchant name, updating live as the user
+  // types. Debounced so we only call the backend ~half a second after they
+  // stop typing (not on every keystroke), and guarded so we never overwrite a
+  // category the user picked by hand. Any failure is ignored — the suggestion
+  // is a convenience, not required.
+  useEffect(() => {
+    const merchant = formData.merchant.trim();
+    if (!merchant || manualCategoryRef.current) return;
+
+    let active = true;
+    const timer = setTimeout(async () => {
+      setSuggesting(true);
+      try {
+        const res = await categorizeMerchant(merchant);
+        if (!active) return; // merchant changed again — ignore this stale result
+        if (res?.category) {
+          setFormData((prev) => ({ ...prev, category: res.category }));
+          setSuggested(true);
+          setErrors((prev) => ({ ...prev, category: undefined }));
+        }
+      } catch {
+        // token expired / backend down — just leave the category to the user
+      } finally {
+        if (active) setSuggesting(false);
+      }
+    }, 500);
+
+    // If the merchant changes (or the modal closes) before the request
+    // finishes, cancel it so only the latest merchant name wins.
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [formData.merchant]);
 
   function validate() {
     const next = {};
@@ -120,7 +166,19 @@ export default function TransactionModal({ closeModal, onSaved }) {
             </label>
 
             <label className={`modal-field ${errors.category ? "has-error" : ""}`}>
-              <span className="modal-field__label">Category</span>
+              <span className="modal-field__label">
+                Category
+                {suggesting && (
+                  <em style={{ marginLeft: 6, fontWeight: 400, opacity: 0.6 }}>
+                    · finding…
+                  </em>
+                )}
+                {suggested && !suggesting && (
+                  <em style={{ marginLeft: 6, fontWeight: 400, opacity: 0.7 }}>
+                    · ✨ auto-suggested
+                  </em>
+                )}
+              </span>
               <div className="modal-input">
                 <FaTag aria-hidden="true" />
                 <select name="category" value={formData.category} onChange={handleChange}>

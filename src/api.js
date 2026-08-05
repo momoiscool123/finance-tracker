@@ -54,3 +54,9 @@ export function listTransactions() {
 export function deleteTransaction(id) {
   return request(`/transactions/${id}`, { method: "DELETE" });
 }
+
+// POST /categorize -> { category, confidence, source }
+// Guess a category from a merchant name (used to pre-fill the Add form).
+export function categorizeMerchant(merchant) {
+  return request("/categorize", { method: "POST", body: { merchant } });
+}

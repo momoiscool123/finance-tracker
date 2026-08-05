@@ -80,7 +80,20 @@ class TransactionOut(BaseModel):
     date: str
     category: Optional[str]
     items: List[ItemOut]
-    
+
+
+# ---------------------------------------------------------------------------
+# Schemas — auto-categorization
+# ---------------------------------------------------------------------------
+class CategorizeRequest(BaseModel):
+    merchant: str
+
+
+class CategorizeResponse(BaseModel):
+    category: Optional[str] = None
+    confidence: float = 0.0
+    source: str            # "override" | "model" | "none" | "unavailable"
+
 # ---------------------------------------------------------------------------
 # Dependency: get the current authenticated user from the Bearer token
 # ---------------------------------------------------------------------------
@@ -232,3 +245,20 @@ def delete_transaction(
     session.delete(transaction)  # cascade also removes its items
     session.commit()
     return None
+
+
+# ---------------------------------------------------------------------------
+# Auto-categorization (Phase D)
+# Guess a category from the merchant name so the Add-Transaction form can
+# pre-fill it. The user can still override the choice.
+# ---------------------------------------------------------------------------
+@app.post("/categorize", response_model=CategorizeResponse)
+def categorize_merchant(
+    request: CategorizeRequest,
+    current_user: User = Depends(get_current_user),
+):
+    # Imported lazily so the API (and its other routes) start fine even in an
+    # environment where the ML libraries aren't installed.
+    from ml.categorize import categorize
+
+    return categorize(request.merchant)

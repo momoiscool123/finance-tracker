@@ -29,3 +29,7 @@ __pycache__/
 *.pyc
 .env
 *.db
+
+# ML model artifacts (large; regenerate with backend/ml/train_categorizer.py)
+backend/ml/categorizer_model/
+backend/ml/_trainer_out/
