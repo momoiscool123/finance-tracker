@@ -36,7 +36,11 @@ def create_tables_on_startup():
 # Without this, the browser blocks requests from localhost:3000 to localhost:8000.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    # Allow any local dev origin — localhost OR 127.0.0.1, on any port. Without
+    # this, opening the app on 127.0.0.1 or a bumped port (e.g. 3001 when 3000
+    # is busy) fails the CORS preflight with a 400, which the browser surfaces
+    # as "Failed to fetch".
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
