@@ -194,6 +194,7 @@ export default function SpendingTrend({ series, money }) {
                 fill="url(#trendFill)"
                 dot={false}
                 activeDot={false}
+                isAnimationActive={false}
               />
 
               {/* Dashed marker line + dot at the scrubbed point. */}

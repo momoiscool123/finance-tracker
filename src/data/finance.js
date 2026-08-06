@@ -152,6 +152,17 @@ export const deriveCategoryBreakdown = (transactions) => {
     .sort((a, b) => b.value - a.value);
 };
 
+// Category totals in EGP, biggest first — for the "Top spending categories" bars.
+export const deriveCategoryTotals = (transactions) => {
+  const totals = {};
+  transactions.forEach((t) => {
+    totals[t.category] = (totals[t.category] || 0) + t.amount;
+  });
+  return Object.entries(totals)
+    .map(([name, total]) => ({ name, total }))
+    .sort((a, b) => b.total - a.total);
+};
+
 // Candlestick: min / max / average purchase amount per category.
 // Ordered by the fixed category list so colours/positions stay stable.
 export const deriveRange = (transactions) => {

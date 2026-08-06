@@ -1,16 +1,18 @@
 import "./TransactionModal.css";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   FaStore,
   FaTag,
   FaCalendarAlt,
   FaStickyNote,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 
 import { useTransactions } from "../../context/TransactionContext";
+import { useBudget } from "../../context/BudgetContext";
 import { categorizeMerchant } from "../../api";
-import { CATEGORY_COLORS } from "../../data/finance";
+import { CATEGORY_COLORS, money } from "../../data/finance";
 
 const CATEGORY_OPTIONS = [
   { name: "Shopping", emoji: "🛍️" },
@@ -32,7 +34,8 @@ const emptyForm = {
 };
 
 export default function TransactionModal({ closeModal, onSaved, transaction }) {
-  const { addTransaction, updateTransaction } = useTransactions();
+  const { addTransaction, updateTransaction, transactions } = useTransactions();
+  const { spendingLimit } = useBudget();
   const isEditing = Boolean(transaction);
   const [formData, setFormData] = useState(
     transaction
@@ -108,6 +111,27 @@ export default function TransactionModal({ closeModal, onSaved, transaction }) {
       clearTimeout(timer);
     };
   }, [formData.merchant]);
+
+  // Live check: would this transaction push its month over the user's spending
+  // limit? Compares the entered amount against the limit, using the total for
+  // the month of the transaction's date (and excluding this row when editing).
+  const limitWarning = useMemo(() => {
+    if (!spendingLimit || spendingLimit <= 0) return null;
+    const amt = Number(formData.amount);
+    if (!Number.isFinite(amt) || amt <= 0 || !formData.date) return null;
+    const ym = formData.date.slice(0, 7);
+    const monthSpent = transactions
+      .filter(
+        (t) =>
+          (t.date || "").slice(0, 7) === ym &&
+          !(isEditing && t.id === transaction.id)
+      )
+      .reduce((sum, t) => sum + t.amount, 0);
+    const projected = monthSpent + amt;
+    return projected > spendingLimit
+      ? { over: projected - spendingLimit, limit: spendingLimit }
+      : null;
+  }, [spendingLimit, formData.amount, formData.date, transactions, isEditing, transaction]);
 
   function validate() {
     const next = {};
@@ -269,6 +293,31 @@ export default function TransactionModal({ closeModal, onSaved, transaction }) {
                 style={{ background: CATEGORY_COLORS[formData.category] }}
               />
               Filed under <strong>{formData.category}</strong>
+            </div>
+          )}
+
+          {limitWarning && (
+            <div
+              role="alert"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                margin: "8px 0 0",
+                padding: "10px 12px",
+                borderRadius: 12,
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#e8a33d",
+                background: "color-mix(in srgb, #e8a33d 12%, transparent)",
+                border: "1px solid color-mix(in srgb, #e8a33d 45%, transparent)",
+              }}
+            >
+              <FaExclamationTriangle aria-hidden="true" />
+              <span>
+                This puts you {money(limitWarning.over)} over your{" "}
+                {money(limitWarning.limit)} monthly limit — you can still save it.
+              </span>
             </div>
           )}
 
